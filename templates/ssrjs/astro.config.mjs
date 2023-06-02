@@ -1,5 +1,7 @@
 import { defineConfig } from 'astro/config'
+import vue from '@astrojs/vue'
 
 export default defineConfig({
-	output: 'server'
+	output: 'server',
+	integrations: [vue()],
 });
