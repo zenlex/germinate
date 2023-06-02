@@ -1,0 +1,8 @@
+# SSRJS Stack - Full Stack JS/TS with Server Side Rendering
+
+title = "ssrjs"
+
+[dependencies.npm]
+astro = "latest"
+typescript = "latest"
+vue = "latest"
