@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
 
@@ -91,11 +91,11 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
-                dependencies: vec![Dependency::Cargo {
-                    name: "clap".to_string(),
+                dependencies: vec![Box::new(Dependency::Cargo {
+                    name: "cargo-make".to_string(),
                     version: "0.33.1".to_string(),
                     features: vec![],
-                }],
+                })],
             },
             _ => Self {
                 languages: vec![],
@@ -167,4 +167,21 @@ enum Dependency {
         name: String,
         version: String,
     },
+}
+
+impl BuildDep for Dependency {
+    fn build(&self) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
+
+    fn destroy(&self) -> Result<(), Box<dyn Error>> {
+        todo!()
+    }
+}
+
+#[derive(Debug)]
+pub struct UserOptions {
+    pub stack: StackTemplate,
+    pub output_dir: PathBuf,
+    pub app_name: String,
 }
