@@ -1,7 +1,7 @@
 mod config;
 
 use clap::{Parser, ValueEnum};
-use config::UserOptions;
+use config::{Database, UserOptions};
 use dialoguer::{console::Term, theme::ColorfulTheme, Input, Select};
 use slug::slugify;
 use std::{
@@ -11,7 +11,9 @@ use std::{
 };
 use strum::{EnumString, EnumVariantNames, VariantNames};
 
-#[derive(Debug, Clone, EnumVariantNames, EnumString)]
+use crate::config::ScaffoldConfig;
+
+#[derive(Debug, Clone, EnumVariantNames, EnumString, ValueEnum)]
 pub enum StackTemplate {
     SSRJS,   // Server Side Rendered JavaScript/TypeScript
     SPAJS,   // Single Page Application JavaScript/TypeScript
@@ -23,25 +25,26 @@ pub enum StackTemplate {
 #[command(author, version, about, long_about= None)]
 pub struct ScaffoldArgs {
     #[arg(short, long)]
-    stack: StackTemplate,
-    #[arg(short, long, default_value = "./")]
+    stack: Option<StackTemplate>,
+    #[arg(short, long)]
     output_dir: Option<PathBuf>,
 }
 fn main() {
-    // TODO: parse command line args (need to make them optional in a logical way)
-    // let args = ScaffoldArgs::parse();
-    // println!("{:?}", args);
+    // TODO: parse command line args (need to make them optional in a logical way and decide on precedence)
+    let args = ScaffoldArgs::parse();
+    println!("{:?}", args);
 
     // get user options
     let user_config = get_user_config().unwrap();
     println!("->> User Config generated: {:?}", user_config);
 
     // create config
+    let app_config = ScaffoldConfig::new(user_config.stack, user_config.db);
     // run scaffolding engine
     // return success/errors
 }
 
-fn get_user_config() -> Result<config::UserOptions, Error> {
+fn get_user_config() -> Result<UserOptions, Error> {
     let app_name = Input::<String>::new()
         .with_prompt("What is the name of your project?")
         .interact_text()?;
@@ -55,9 +58,29 @@ fn get_user_config() -> Result<config::UserOptions, Error> {
         .interact()?;
     let stack_name = stack_options[stack_template_index];
 
-    Ok(config::UserOptions {
+    let use_db = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Would you like to use a database?")
+        .items(&["Yes", "No"])
+        .interact()?;
+
+    let db;
+    if use_db == 0 {
+        let db_options = Database::VARIANTS;
+        let db_index = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("What database would you like to use?")
+            .items(&db_options)
+            .interact()?;
+        db = <Database as FromStr>::from_str(db_options[db_index]).ok()
+    } else {
+        db = None
+    };
+
+    //TODO: handle follow up questions based on stack choice (e.g. php extensions, db, etc. )
+
+    Ok(UserOptions {
         app_name: app_name.clone(),
-        stack: StackTemplate::from_str(stack_name).expect("Invalid stack name"),
+        stack: <StackTemplate as FromStr>::from_str(stack_name).expect("Invalid stack name"),
         output_dir: Path::new(&output_dir).to_path_buf(),
+        db,
     })
 }

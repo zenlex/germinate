@@ -1,6 +1,7 @@
 use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
+use strum::{EnumString, EnumVariantNames};
 
 use crate::StackTemplate;
 
@@ -28,8 +29,8 @@ enum CMS {
     Strapi,
 }
 
-#[derive(Debug, Clone)]
-enum Database {
+#[derive(Debug, Clone, EnumVariantNames, EnumString)]
+pub enum Database {
     Postgres,
 }
 
@@ -80,13 +81,17 @@ pub struct ScaffoldConfig {
 
 impl ScaffoldConfig {
     // TODO: get an object of command line args and parse them into a ScaffoldConfig
-    pub fn new(stack: StackTemplate) -> Self {
+    pub fn new(stack: StackTemplate, db: Option<Database>) -> Self {
         match stack {
-            StackTemplate::RSCLI => Self {
-                languages: vec![Language::Rust],
-                web_frameworks: vec![],
-                test_frameworks: vec![],
-                db: None,
+            StackTemplate::SSRJS => Self {
+                languages: vec![Language::TypeScript],
+                web_frameworks: vec![
+                    WebFramework::Astro,
+                    WebFramework::Express,
+                    WebFramework::Vue,
+                ],
+                test_frameworks: vec![TestFramework::Vitest],
+                db: db,
                 db_client: None,
                 cms: None,
                 linters: vec![],
@@ -184,4 +189,5 @@ pub struct UserOptions {
     pub stack: StackTemplate,
     pub output_dir: PathBuf,
     pub app_name: String,
+    pub db: Option<Database>,
 }
