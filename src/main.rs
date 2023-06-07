@@ -45,6 +45,7 @@ fn main() {
 }
 
 fn get_user_config() -> Result<UserOptions, Error> {
+    //TODO: encapsulate each build/prompt step here into it's own function and probably move to the config module
     let app_name = Input::<String>::new()
         .with_prompt("What is the name of your project?")
         .interact_text()?;
@@ -63,16 +64,10 @@ fn get_user_config() -> Result<UserOptions, Error> {
         .items(&["Yes", "No"])
         .interact()?;
 
-    let db;
-    if use_db == 0 {
-        let db_options = Database::VARIANTS;
-        let db_index = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("What database would you like to use?")
-            .items(&db_options)
-            .interact()?;
-        db = <Database as FromStr>::from_str(db_options[db_index]).ok()
+    let db = if use_db == 0 {
+        Some(get_db_from_user())
     } else {
-        db = None
+        None
     };
 
     //TODO: handle follow up questions based on stack choice (e.g. php extensions, db, etc. )
@@ -83,4 +78,13 @@ fn get_user_config() -> Result<UserOptions, Error> {
         output_dir: Path::new(&output_dir).to_path_buf(),
         db,
     })
+}
+
+fn get_db_from_user() -> Database {
+    let db_options = Database::VARIANTS;
+    let db_index = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("What database would you like to use?")
+        .items(&db_options)
+        .interact()?;
+    <Database as FromStr>::from_str(db_options[db_index]).expect("Invalid db name")
 }

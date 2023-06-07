@@ -1,3 +1,4 @@
+// TODO: break this up into multiple modules (database, web_framework, etc.) and then have a config module that imports them all and builds the config object
 use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
@@ -80,11 +81,14 @@ pub struct ScaffoldConfig {
 }
 
 impl ScaffoldConfig {
-    // TODO: get an object of command line args and parse them into a ScaffoldConfig
+    // TODO: get I should an object of command line args and parse them into a ScaffoldConfig
+    // ? Would a builder pattern here be better than hardcoding the stack match?
+    // ! I think I can strip out some of these enums/fields since the stack TOML will handle all dependencies for frameworks, etc. so the only things I need to set up here are the shared platforms - db, cms, linters, language support? (might need to check for that...)
+    // ! Need to contemplate what should be set in TOML vs what is prompted for - I'm thinking per above comment, services are set by questions but rest of stack is set by TOML. Lean into it that way for now, TOML is probably nicer to edit than code anyway. Learn from the Clevyr Scaffold - make the prompts about the kind of project you're doing rather than too much about specific packages, handle that in the TOMLs.
     pub fn new(stack: StackTemplate, db: Option<Database>) -> Self {
         match stack {
             StackTemplate::SSRJS => Self {
-                languages: vec![Language::TypeScript],
+                languages: vec![Language::TypeScript], // make sure lang is installed
                 web_frameworks: vec![
                     WebFramework::Astro,
                     WebFramework::Express,
