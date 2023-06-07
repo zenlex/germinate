@@ -85,6 +85,7 @@ fn get_db_from_user() -> Database {
     let db_index = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("What database would you like to use?")
         .items(&db_options)
-        .interact()?;
+        .interact()
+        .expect("Failed to get db selection from user");
     <Database as FromStr>::from_str(db_options[db_index]).expect("Invalid db name")
 }
