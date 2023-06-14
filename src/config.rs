@@ -1,10 +1,95 @@
 // TODO: break this up into multiple modules (database, web_framework, etc.) and then have a config module that imports them all and builds the config object
-use std::{error::Error, path::PathBuf};
+use dialoguer::{theme::ColorfulTheme, Input, Select};
+use std::{
+    error::Error,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
-use clap::Parser;
-use strum::{EnumString, EnumVariantNames};
+use slug::slugify;
+use strum::{EnumString, EnumVariantNames, VariantNames};
 
 use crate::StackTemplate;
+
+#[derive(Debug, Clone)]
+pub struct ScaffoldConfig {
+    languages: Vec<Language>,
+    web_frameworks: Vec<WebFramework>,
+    test_frameworks: Vec<TestFramework>,
+    db: Option<Database>,
+    db_client: Option<DbClient>,
+    cms: Option<CMS>,
+    linters: Vec<Linter>,
+    formatters: Vec<Formatter>,
+}
+
+impl ScaffoldConfig {
+    // ! Going to ditch the toml option for package management and bake that into the stack builders, can extract later for extensibility if desired
+    // ! TOML files will serve to set up folder structure and any other config that is not language/framework specific
+    pub fn new(options: UserOptions) -> Self {
+        match options.stack {
+            StackTemplate::SSRJS => Self {
+                languages: vec![Language::TypeScript], // make sure lang is installed
+                web_frameworks: vec![
+                    WebFramework::Astro,
+                    WebFramework::Vue,
+                    WebFramework::Express,
+                ],
+                test_frameworks: vec![TestFramework::Vitest],
+                db: options.db,
+                db_client: None,
+                cms: None,
+                linters: vec![],
+                formatters: vec![],
+            },
+            _ => Self {
+                languages: vec![],
+                web_frameworks: vec![],
+                test_frameworks: vec![],
+                db: None,
+                db_client: None,
+                cms: None,
+                linters: vec![],
+                formatters: vec![],
+            },
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct UserOptions {
+    pub stack: StackTemplate,
+    pub output_dir: PathBuf,
+    pub app_name: String,
+    pub db: Option<Database>,
+}
+
+pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
+    let app_name = Input::<String>::new()
+        .with_prompt("What is the name of your project?")
+        .interact_text()?;
+
+    let output_dir = slugify(&app_name);
+    let stack = stack_prompts();
+    let db = db_prompts();
+
+    //TODO: handle follow up questions based on stack choice
+
+    let user_config = UserOptions {
+        app_name,
+        stack,
+        output_dir: Path::new(&output_dir).to_path_buf(),
+        db,
+    };
+    println!("->> User Config generated: {:?}", user_config);
+
+    Ok(user_config)
+}
+
+#[derive(Debug, Clone, EnumVariantNames, EnumString)]
+pub enum Database {
+    Postgres,
+}
 
 #[derive(Debug, Clone)]
 enum Language {
@@ -28,11 +113,6 @@ enum WebFramework {
 enum CMS {
     Filament,
     Strapi,
-}
-
-#[derive(Debug, Clone, EnumVariantNames, EnumString)]
-pub enum Database {
-    Postgres,
 }
 
 #[derive(Debug, Clone)]
@@ -62,95 +142,10 @@ enum Linter {
 
 #[derive(Debug, Clone)]
 enum Formatter {
-    Prettier,
+    ESLint,
     PhpCsFixer,
     Pint,
     Rustfmt,
-}
-
-pub struct ScaffoldConfig {
-    languages: Vec<Language>,
-    web_frameworks: Vec<WebFramework>,
-    test_frameworks: Vec<TestFramework>,
-    db: Option<Database>,
-    db_client: Option<DbClient>,
-    cms: Option<CMS>,
-    linters: Vec<Linter>,
-    formatters: Vec<Formatter>,
-    dependencies: Vec<Box<dyn BuildDep>>,
-}
-
-impl ScaffoldConfig {
-    // TODO: get I should an object of command line args and parse them into a ScaffoldConfig
-    // ? Would a builder pattern here be better than hardcoding the stack match?
-    // ! I think I can strip out some of these enums/fields since the stack TOML will handle all dependencies for frameworks, etc. so the only things I need to set up here are the shared platforms - db, cms, linters, language support? (might need to check for that...)
-    // ! Need to contemplate what should be set in TOML vs what is prompted for - I'm thinking per above comment, services are set by questions but rest of stack is set by TOML. Lean into it that way for now, TOML is probably nicer to edit than code anyway. Learn from the Clevyr Scaffold - make the prompts about the kind of project you're doing rather than too much about specific packages, handle that in the TOMLs.
-    pub fn new(stack: StackTemplate, db: Option<Database>) -> Self {
-        match stack {
-            StackTemplate::SSRJS => Self {
-                languages: vec![Language::TypeScript], // make sure lang is installed
-                web_frameworks: vec![
-                    WebFramework::Astro,
-                    WebFramework::Express,
-                    WebFramework::Vue,
-                ],
-                test_frameworks: vec![TestFramework::Vitest],
-                db: db,
-                db_client: None,
-                cms: None,
-                linters: vec![],
-                formatters: vec![],
-                dependencies: vec![Box::new(Dependency::Cargo {
-                    name: "cargo-make".to_string(),
-                    version: "0.33.1".to_string(),
-                    features: vec![],
-                })],
-            },
-            _ => Self {
-                languages: vec![],
-                web_frameworks: vec![],
-                test_frameworks: vec![],
-                db: None,
-                db_client: None,
-                cms: None,
-                linters: vec![],
-                formatters: vec![],
-                dependencies: vec![],
-            },
-        }
-    }
-
-    pub fn add_language(&mut self, language: Language) {
-        self.languages.push(language);
-    }
-
-    pub fn add_web_framework(&mut self, web_framework: WebFramework) {
-        self.web_frameworks.push(web_framework);
-    }
-
-    pub fn add_test_framework(&mut self, test_framework: TestFramework) {
-        self.test_frameworks.push(test_framework);
-    }
-
-    pub fn set_db(&mut self, db: Database) {
-        self.db = Some(db);
-    }
-
-    pub fn set_db_client(&mut self, db_client: DbClient) {
-        self.db_client = Some(db_client);
-    }
-
-    pub fn set_cms(&mut self, cms: CMS) {
-        self.cms = Some(cms);
-    }
-
-    pub fn add_linter(&mut self, linter: Linter) {
-        self.linters.push(linter);
-    }
-
-    pub fn add_formatter(&mut self, formatter: Formatter) {
-        self.formatters.push(formatter);
-    }
 }
 
 trait BuildDep {
@@ -158,40 +153,39 @@ trait BuildDep {
     fn destroy(&self) -> Result<(), Box<dyn Error>>;
 }
 
-enum Dependency {
-    Npm {
-        name: String,
-        version: String,
-    },
-    Cargo {
-        name: String,
-        version: String,
-        features: Vec<String>,
-    },
-    Composer {
-        name: String,
-        version: String,
-    },
-    Yarn {
-        name: String,
-        version: String,
-    },
+fn stack_prompts() -> StackTemplate {
+    let stack_options = StackTemplate::VARIANTS;
+    let stack_template_index = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("What stack would you like to use?")
+        .items(&stack_options)
+        .interact()
+        .expect("Failed to get stack selection from user");
+    let stack_name = stack_options[stack_template_index];
+    <StackTemplate as FromStr>::from_str(stack_name).expect("Invalid stack name")
 }
 
-impl BuildDep for Dependency {
-    fn build(&self) -> Result<(), Box<dyn Error>> {
-        todo!()
-    }
+fn db_prompts() -> Option<Database> {
+    let use_db = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Would you like to use a database?")
+        .items(&["Yes", "No"])
+        .interact()
+        .ok()?;
 
-    fn destroy(&self) -> Result<(), Box<dyn Error>> {
-        todo!()
-    }
+    let db = if use_db == 0 {
+        Some(get_db_from_user())
+    } else {
+        None
+    };
+
+    db
 }
 
-#[derive(Debug)]
-pub struct UserOptions {
-    pub stack: StackTemplate,
-    pub output_dir: PathBuf,
-    pub app_name: String,
-    pub db: Option<Database>,
+fn get_db_from_user() -> Database {
+    let db_options = Database::VARIANTS;
+    let db_index = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("What database would you like to use?")
+        .items(&db_options)
+        .interact()
+        .expect("Failed to get db selection from user");
+    <Database as FromStr>::from_str(db_options[db_index]).expect("Invalid db name")
 }
