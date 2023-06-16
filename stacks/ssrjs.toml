@@ -2,9 +2,13 @@
 
 title = "ssrjs"
 
-subfolders = ["src", "public", "src/pages", "src/layouts", "src/components"]
+[subfolders] 
+public = []
+src = ["pages", "layouts", "components"] 
 
-[dependencies.npm]
-astro = {dev = true}
-"@astrojs/vue" = "latest"
-vue = "latest" 
+[dependencies]
+npm = [
+	{name = "astro"},
+	{name = "@astrojs/vue"},
+	{name= "vue"},
+]

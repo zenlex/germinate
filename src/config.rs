@@ -1,6 +1,7 @@
 // TODO: break this up into multiple modules (database, web_framework, etc.) and then have a config module that imports them all and builds the config object
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use std::{
+    collections::HashMap,
     error::Error,
     path::{Path, PathBuf},
     str::FromStr,
@@ -9,6 +10,7 @@ use std::{
 use slug::slugify;
 use strum::{EnumString, EnumVariantNames, VariantNames};
 
+use crate::module::Module;
 use crate::StackTemplate;
 
 #[derive(Debug, Clone)]
@@ -21,26 +23,26 @@ pub struct ScaffoldConfig {
     cms: Option<CMS>,
     linters: Vec<Linter>,
     formatters: Vec<Formatter>,
+    npm_deps: HashMap<String, Module>,
+    composer_deps: HashMap<String, Module>,
+    cargo_deps: HashMap<String, Module>,
 }
 
 impl ScaffoldConfig {
-    // ! Going to ditch the toml option for package management and bake that into the stack builders, can extract later for extensibility if desired
-    // ! TOML files will serve to set up folder structure and any other config that is not language/framework specific
     pub fn new(options: UserOptions) -> Self {
         match options.stack {
             StackTemplate::SSRJS => Self {
-                languages: vec![Language::TypeScript], // make sure lang is installed
-                web_frameworks: vec![
-                    WebFramework::Astro,
-                    WebFramework::Vue,
-                    WebFramework::Express,
-                ],
+                languages: vec![Language::TypeScript, Language::JavaScript], // make sure lang is installed
+                web_frameworks: vec![WebFramework::Astro, WebFramework::Vue],
                 test_frameworks: vec![TestFramework::Vitest],
                 db: options.db,
                 db_client: None,
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
+                npm_deps: HashMap::new(),
+                composer_deps: HashMap::new(),
+                cargo_deps: HashMap::new(),
             },
             _ => Self {
                 languages: vec![],
@@ -51,6 +53,9 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
+                npm_deps: HashMap::new(),
+                composer_deps: HashMap::new(),
+                cargo_deps: HashMap::new(),
             },
         }
     }
