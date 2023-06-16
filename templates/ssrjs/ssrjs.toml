@@ -1,10 +1,17 @@
 # SSRJS Stack - Full Stack JS/TS with Server Side Rendering
-
 title = "ssrjs"
 
 [subfolders] 
 public = []
 src = ["pages", "layouts", "components"] 
+
+[scripts]
+npm = [
+		{"dev" = "astro dev"},
+		{"start" = "astro dev"},
+		{"build" = "astro build"},
+		{"preview" = "astro preview"}
+]
 
 [dependencies]
 npm = [

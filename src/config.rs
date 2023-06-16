@@ -8,7 +8,7 @@ use std::{
 };
 
 use slug::slugify;
-use strum::{EnumString, EnumVariantNames, VariantNames};
+use strum::{EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
 
 use crate::module::Module;
 use crate::StackTemplate;
@@ -158,15 +158,19 @@ trait BuildDep {
     fn destroy(&self) -> Result<(), Box<dyn Error>>;
 }
 
+//TODO: add human readable label to enums (probably use a strum macro for a prop)
 fn stack_prompts() -> StackTemplate {
-    let stack_options = StackTemplate::VARIANTS;
+    let mut stacks = StackTemplate::iter();
+    let prompt_labels = stacks
+        .clone()
+        .map(|s| s.get_str("Label").unwrap())
+        .collect::<Vec<_>>();
     let stack_template_index = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("What stack would you like to use?")
-        .items(&stack_options)
+        .items(&prompt_labels)
         .interact()
         .expect("Failed to get stack selection from user");
-    let stack_name = stack_options[stack_template_index];
-    <StackTemplate as FromStr>::from_str(stack_name).expect("Invalid stack name")
+    stacks.nth(stack_template_index).unwrap()
 }
 
 fn db_prompts() -> Option<Database> {
