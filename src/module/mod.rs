@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path};
 use toml::Table;
 #[derive(Debug, Clone)]
 pub struct Module {
@@ -37,18 +37,14 @@ pub struct NpmDeps {
 // ? refactor TomlTemplate construction to deserialize traits for toml? (maybe not worth it)
 #[cfg(test)]
 pub mod tests {
+
     use super::*;
 
     #[test]
-    fn test_module() {
-        let module = Module::new("astro".to_string(), "0.1.0".to_string(), true, None);
-        println!("{:?}", module);
-    }
-
-    #[test]
     fn test_parse_toml() {
-        let template_str = fs::read_to_string("templates/ssrjs/ssrjs.toml").unwrap();
-        let table = template_str.parse::<Table>().unwrap();
+        let path = Path::new("templates/ssrjs/ssrjs.toml");
+        let template_str = fs::read_to_string(path).expect("Error reading file");
+        let table = template_str.parse::<Table>().expect("Error parsing toml");
         assert_eq!(table["title"].as_str(), Some("ssrjs"));
         println!("{:?}", table);
     }
