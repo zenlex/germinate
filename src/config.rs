@@ -158,7 +158,6 @@ trait BuildDep {
     fn destroy(&self) -> Result<(), Box<dyn Error>>;
 }
 
-//TODO: add human readable label to enums (probably use a strum macro for a prop)
 fn stack_prompts() -> StackTemplate {
     let mut stacks = StackTemplate::iter();
     let prompt_labels = stacks
