@@ -15,7 +15,7 @@ npm = [
 
 [dependencies]
 npm = [
-	{name = "astro"},
+	{name = "astro", dev = true, version = "^0.21.0", then=["npm run build", "npm run install"]},
 	{name = "@astrojs/vue"},
 	{name= "vue"},
 ]
