@@ -16,7 +16,7 @@ use crate::StackTemplate;
 #[derive(Debug, Clone)]
 pub struct ScaffoldConfig {
     languages: Vec<Language>,
-    web_frameworks: Vec<WebFramework>,
+    web_frameworks: Option<Vec<WebFramework>>,
     test_frameworks: Vec<TestFramework>,
     db: Option<Database>,
     db_client: Option<DbClient>,
@@ -33,8 +33,8 @@ impl ScaffoldConfig {
         match options.stack {
             StackTemplate::SSRJS => Self {
                 languages: vec![Language::TypeScript, Language::JavaScript], // make sure lang is installed
-                web_frameworks: vec![WebFramework::Astro, WebFramework::Vue], // ? handle from TOML?
-                test_frameworks: vec![TestFramework::Vitest],                // ? handle from TOML?
+                web_frameworks: Some(vec![WebFramework::Astro, WebFramework::Vue]), // ? handle from TOML?
+                test_frameworks: vec![TestFramework::Vitest], // ? handle from TOML?
                 db: options.db,
                 db_client: None,
                 cms: None,
@@ -46,7 +46,7 @@ impl ScaffoldConfig {
             },
             _ => Self {
                 languages: vec![],
-                web_frameworks: vec![],
+                web_frameworks: None,
                 test_frameworks: vec![],
                 db: None,
                 db_client: None,
