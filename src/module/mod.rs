@@ -98,23 +98,9 @@ impl TomlTemplate {
     }
 }
 
-pub struct NpmDeps {
-    deps: Vec<Module>,
-}
-
-impl NpmDeps {
-    pub fn new() -> Self {
-        Self { deps: Vec::new() }
-    }
-
-    pub fn add(&mut self, module: Module) {
-        self.deps.push(module);
-    }
-
-    pub fn get(&self) -> Vec<Module> {
-        self.deps.clone()
-    }
-}
+pub type NpmDeps = Vec<Module>;
+pub type CargoDeps = Vec<Module>;
+pub type ComposerDeps = Vec<Module>;
 
 // ? refactor TomlTemplate construction to deserialize traits for toml? (move extractors to trait impls per toml crate and update struct so we can deserialize direct to TomlTemplate)
 #[cfg(test)]

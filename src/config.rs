@@ -1,16 +1,16 @@
 // TODO: break this up into multiple modules (database, web_framework, etc.) and then have a config module that imports them all and builds the config object
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use std::{
-    collections::HashMap,
     error::Error,
     path::{Path, PathBuf},
     str::FromStr,
+    vec,
 };
 
 use slug::slugify;
 use strum::{EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
 
-use crate::module::Module;
+use crate::module::{CargoDeps, ComposerDeps, NpmDeps};
 use crate::StackTemplate;
 
 #[derive(Debug, Clone)]
@@ -23,9 +23,9 @@ pub struct ScaffoldConfig {
     cms: Option<CMS>,
     linters: Vec<Linter>,
     formatters: Vec<Formatter>,
-    npm_deps: HashMap<String, Module>,
-    composer_deps: HashMap<String, Module>,
-    cargo_deps: HashMap<String, Module>,
+    npm_deps: NpmDeps,
+    composer_deps: ComposerDeps,
+    cargo_deps: CargoDeps,
 }
 
 impl ScaffoldConfig {
@@ -40,9 +40,9 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
-                npm_deps: HashMap::new(),
-                composer_deps: HashMap::new(),
-                cargo_deps: HashMap::new(),
+                npm_deps: vec![],
+                composer_deps: vec![],
+                cargo_deps: vec![],
             },
             _ => Self {
                 languages: vec![],
@@ -53,9 +53,9 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
-                npm_deps: HashMap::new(),
-                composer_deps: HashMap::new(),
-                cargo_deps: HashMap::new(),
+                npm_deps: vec![],
+                composer_deps: vec![],
+                cargo_deps: vec![],
             },
         }
     }
