@@ -33,8 +33,8 @@ impl ScaffoldConfig {
         match options.stack {
             StackTemplate::SSRJS => Self {
                 languages: vec![Language::TypeScript, Language::JavaScript], // make sure lang is installed
-                web_frameworks: vec![WebFramework::Astro, WebFramework::Vue],
-                test_frameworks: vec![TestFramework::Vitest],
+                web_frameworks: vec![WebFramework::Astro, WebFramework::Vue], // ? handle from TOML?
+                test_frameworks: vec![TestFramework::Vitest],                // ? handle from TOML?
                 db: options.db,
                 db_client: None,
                 cms: None,

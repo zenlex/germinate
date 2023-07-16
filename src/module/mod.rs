@@ -41,50 +41,55 @@ impl TomlTemplate {
             .as_table()
             .expect("Error parsing dependencies");
 
-        let npm_deps: Vec<_> = if deps.contains_key("npm") {
-            deps["npm"]
-                .as_array()
-                .expect("Error parsing npm dependencies")
-                .iter()
-                .map(|dep| {
-                    let dep = dep.as_table().expect("Error parsing dep");
-                    let name = dep["name"].as_str().expect("Error parsing name");
+        let npm_deps: Vec<_> = match deps.get("npm") {
+            Some(entries) => {
+                entries
+                    .as_array()
+                    .expect("Error parsing npm dependencies")
+                    .iter()
+                    .map(|dep| {
+                        let dep = dep.as_table().expect("Error parsing dep");
+                        let name = match dep.get("name") {
+                            Some(name) => name.as_str().expect("Error parsing name"),
+                            None => panic!("Error parsing name"),
+                        };
 
-                    //TODO: add semver crate to allow for parsing semver ranges
-                    let version = if dep.contains_key("version") {
-                        dep["version"].as_str().expect("Error parsing version")
-                    } else {
-                        "latest"
-                    };
+                        //TODO: add semver crate to allow for parsing semver ranges
+                        let version = match dep.get("version") {
+                            Some(version) => version.as_str().expect("Error parsing version"),
+                            None => "latest",
+                        };
 
-                    let dev = if dep.contains_key("dev") {
-                        dep["dev"].as_bool().expect("Error parsing dev")
-                    } else {
-                        false
-                    };
+                        let dev = match dep.get("dev") {
+                            Some(dev) => dev.as_bool().expect("Error parsing dev"),
+                            None => false,
+                        };
 
-                    let then = if dep.contains_key("then") {
-                        let cmds = dep["then"]
-                            .as_array()
-                            .expect("Error parsing then array")
-                            .iter()
-                            .map(|arr| arr.as_array().expect("Error parsing cmd"))
-                            .map(|cmd_arr| {
-                                cmd_arr
+                        let then = match dep.get("then") {
+                            Some(cmds) => {
+                                let cmds = cmds
+                                    .as_array()
+                                    .expect("Error parsing then array")
                                     .iter()
-                                    .map(|arg| arg.as_str().expect("Error parsing arg").to_string())
-                                    .collect::<Vec<_>>()
-                            })
-                            .collect::<Vec<_>>();
-                        Some(cmds)
-                    } else {
-                        None
-                    };
-                    Module::new(name.to_string(), version.to_string(), dev, then)
-                })
-                .collect()
-        } else {
-            Vec::new()
+                                    .map(|arr| arr.as_array().expect("Error parsing cmd"))
+                                    .map(|cmd_arr| {
+                                        cmd_arr
+                                            .iter()
+                                            .map(|arg| {
+                                                arg.as_str().expect("Error parsing arg").to_string()
+                                            })
+                                            .collect()
+                                    })
+                                    .collect();
+                                Some(cmds)
+                            }
+                            None => None,
+                        };
+                        Module::new(name.to_string(), version.to_string(), dev, then)
+                    })
+                    .collect()
+            }
+            None => Vec::new(),
         };
 
         let mut deps = HashMap::new();
