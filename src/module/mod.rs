@@ -1,3 +1,4 @@
+//TODO: extract npm specific stuff to npm module and add composer and cargo modules
 use std::{collections::HashMap, fs, path::Path};
 use toml::Table;
 
@@ -108,8 +109,7 @@ impl NpmDeps {
     }
 }
 
-// TODO add builders for composer and cargo deps
-// ? refactor TomlTemplate construction to deserialize traits for toml? (maybe not worth it)
+// ? refactor TomlTemplate construction to deserialize traits for toml? (move extractors to trait impls per toml crate and update struct so we can deserialize direct to TomlTemplate)
 #[cfg(test)]
 pub mod tests {
 
