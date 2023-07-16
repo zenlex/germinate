@@ -1,0 +1,27 @@
+# General Config
+title = "ssrjs"
+description ="Full Stack JS/TS with Server Side Rendering"
+
+[subfolders] 
+public = []
+src = ["pages", "layouts", "components"] 
+
+# Scripts
+[scripts.npm]
+"dev" = "astro dev"
+"start" = "astro dev"
+"build" = "astro build"
+"preview" = "astro preview"
+
+# Dependencies
+[[deps.npm]]
+name = "astro"
+dev = true
+version = "^0.21.0"
+then=["npm run build", "npm run install"]
+
+[[deps.npm]]
+name = "@astrojs/vue"
+
+[[deps.npm]]
+name= "vue"

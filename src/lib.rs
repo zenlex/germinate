@@ -12,3 +12,11 @@ The basic idea for a given stack:
 - commit initial files
 - option to create github repo and push
  */
+
+/* strategy
+    - put stack name and description in stack_template file in subfolder
+    - read subfolders to populate stack options in dialog
+    - once stack and options are selected (db, linters, etc), create a config struct
+    - use config struct to create a builder struct
+    - builder struct will have methods for each step of the scaffolding process (see above)
+*/

@@ -1,18 +1,19 @@
-# Template for testing parsing
+# General Config
 title = "toml_test_template"
+description = "Template for testing parsing"
 
 [subfolders] 
 public = []
 src = ["pages", "layouts", "components"] 
 
-[scripts]
-npm = [
-		{"dev" = "test dev"},
-		{"start" = "test dev"},
-		{"build" = "test build"},
-		{"preview" = "test preview"}
-]
+# Scripts
+[scripts.npm]
+"dev" = "test dev"
+"start" = "test dev"
+"build" = "test build"
+"preview" = "test preview"
 
+#Dependencies
 [[deps.npm]]
 name = "test_npm_dep_min"
 

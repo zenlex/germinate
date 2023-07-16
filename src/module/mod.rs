@@ -1,3 +1,5 @@
+//TODO: create PackageManager trait with parse_deps, install_deps and generate_commands behaviors - might be able to just impl the toml deserializer trait for the ParseDeps part?)
+//TODO: Create a struct for each package manager that implements the PackageManager trait and an Enum that holds those structs
 //TODO: extract npm specific stuff to npm module and add composer and cargo modules
 use std::{collections::HashMap, fs, path::Path};
 use toml::Table;
@@ -117,10 +119,10 @@ pub mod tests {
 
     #[test]
     fn test_parse_toml() {
-        let path = Path::new("templates/ssrjs/ssrjs.toml");
+        let path = Path::new("test/__mocks__/_test.toml");
         let template_str = fs::read_to_string(path).expect("Error reading file");
         let table = template_str.parse::<Table>().expect("Error parsing toml");
-        assert_eq!(table["title"].as_str(), Some("ssrjs"));
+        assert_eq!(table["title"].as_str(), Some("toml_test_template"));
     }
 
     #[test]
