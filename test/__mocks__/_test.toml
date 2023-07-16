@@ -1,0 +1,23 @@
+# Template for testing parsing
+title = "toml_test_template"
+
+[subfolders] 
+public = []
+src = ["pages", "layouts", "components"] 
+
+[scripts]
+npm = [
+		{"dev" = "test dev"},
+		{"start" = "test dev"},
+		{"build" = "test build"},
+		{"preview" = "test preview"}
+]
+
+[[deps.npm]]
+name = "test_npm_dep_min"
+
+[[deps.npm]]
+name = "test_npm_dev_dep_full"
+version = "^1.0.0"
+dev = true 
+then=[["naked_command"], ["command_with_args", "arg1", "arg2"]]
