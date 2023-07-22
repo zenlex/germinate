@@ -23,6 +23,11 @@ The components common across multiple stacks (databases, linters, formatters, et
 # Concept/Usage (eventually --WIP--)
 - run `germinate [project name]`
 - answer questions
+  - which stack? 
+  - database or not?
+    - if database - which platform?
+  - linter & formatter preferences
+  - testing framework preferences
 - germinate:
    - creates folders
    - installs dependencies

@@ -1,11 +1,13 @@
 //TODO: create PackageManager trait with parse_deps, install_deps and generate_commands behaviors - might be able to just impl the toml deserializer trait for the ParseDeps part?)
 //TODO: Create a struct for each package manager that implements the PackageManager trait and an Enum that holds those structs
+// TODO: Create a builder struct that runs the package manager install command for each package manager (CargoBuilder, NpmBuilder, ComposerBuilder, etc)
+// TODO: Create a projectBuilder struct that creates the folders, runs the package manager builders, runs the docker builder, db builder, etc.
 //TODO: extract npm specific stuff to npm module and add composer and cargo modules
 use std::{collections::HashMap, fs, path::Path};
 use toml::Table;
 
 type Dependencies = HashMap<String, Vec<Module>>;
-type Scripts = HashMap<String, Vec<Vec<String>>>;
+type Scripts = HashMap<String, HashMap<String, String>>;
 type ThenCommands = Vec<Vec<String>>;
 #[derive(Debug, Clone)]
 pub struct Module {
@@ -35,11 +37,11 @@ struct TomlTemplate {
 
 impl TomlTemplate {
     pub fn parse_deps(path: &Path) -> Option<Dependencies> {
-        let template_str = fs::read_to_string(path).expect("Error reading file");
-        let table = template_str.parse::<Table>().expect("Error parsing toml");
-        let deps = table["deps"]
-            .as_table()
-            .expect("Error parsing dependencies");
+        let table = Self::get_table(path).expect("Error parsing toml");
+        let deps = match table.get("deps") {
+            Some(deps) => deps.as_table().expect("Error parsing dependencies"),
+            None => panic!("No deps key in table"),
+        };
 
         let npm_deps: Vec<_> = match deps.get("npm") {
             Some(entries) => {
@@ -96,6 +98,43 @@ impl TomlTemplate {
         deps.insert("npm".to_string(), npm_deps);
         Some(deps)
     }
+
+    fn parse_scripts(path: &Path) -> Option<Scripts> {
+        let table = Self::get_table(path).expect("Error parsing toml");
+        let scripts = match table.get("scripts") {
+            Some(scripts) => scripts.as_table().expect("Error parsing dependencies"),
+            None => panic!("No deps key in table"),
+        };
+
+        let npm_scripts = match scripts.get("npm") {
+            Some(entries) => {
+                let mut scripts = HashMap::new();
+                entries
+                    .as_table()
+                    .expect("Error extracting npm scripts table")
+                    .iter()
+                    .for_each(|(key, val)| {
+                        scripts.insert(
+                            key.to_string(),
+                            val.as_str().expect("Error parsing script").to_string(),
+                        );
+                    });
+                scripts
+            }
+            None => HashMap::new(),
+        };
+
+        let mut scripts = HashMap::new();
+        scripts.insert("npm".to_string(), npm_scripts);
+
+        Some(scripts)
+    }
+
+    fn get_table(path: &Path) -> Option<Table> {
+        let template_str = fs::read_to_string(path).expect("Error reading file");
+        let table = template_str.parse::<Table>().expect("Error parsing toml");
+        Some(table)
+    }
 }
 
 pub type NpmDeps = Vec<Module>;
@@ -143,5 +182,21 @@ pub mod tests {
         assert_eq!(then_cmds[1][0], "command_with_args");
         assert_eq!(then_cmds[1][1], "arg1");
         assert_eq!(then_cmds[1][2], "arg2");
+    }
+
+    #[test]
+    fn extract_npm_scripts() {
+        let path = Path::new("test/__mocks__/_test.toml");
+        let parsed_scripts = TomlTemplate::parse_scripts(path).expect("Error parsing deps");
+
+        assert!(parsed_scripts.contains_key("npm"));
+        let npm_scripts = parsed_scripts
+            .get("npm")
+            .expect("Error getting npm scripts");
+
+        assert_eq!(npm_scripts["dev"], "test dev");
+        assert_eq!(npm_scripts["start"], "test prod");
+        assert_eq!(npm_scripts["build"], "test build");
+        assert_eq!(npm_scripts["preview"], "test preview");
     }
 }

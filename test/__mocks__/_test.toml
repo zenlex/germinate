@@ -9,7 +9,7 @@ src = ["pages", "layouts", "components"]
 # Scripts
 [scripts.npm]
 "dev" = "test dev"
-"start" = "test dev"
+"start" = "test prod"
 "build" = "test build"
 "preview" = "test preview"
 
