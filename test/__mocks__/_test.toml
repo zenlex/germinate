@@ -18,11 +18,27 @@ l2bar = {}
 l2baz = {}
 
 # Scripts
+# NPM
 [scripts.npm]
 "dev" = "test dev"
 "start" = "test prod"
 "build" = "test build"
 "preview" = "test preview"
+
+# CARGO
+[scripts.cargo]
+"dev" = "test dev"
+"start" = "test prod"
+"build" = "test build"
+"preview" = "test preview"
+
+# COMPOSER
+[scripts.composer]
+"dev" = "test dev"
+"start" = "test prod"
+"build" = "test build"
+"preview" = "test preview"
+
 
 # Dependencies
 # NPM

@@ -5,13 +5,13 @@ use std::{
 };
 
 use crate::module::Module;
-use toml::{Table, Value};
+use toml::{map::Map, Table, Value};
 #[allow(unused)]
 pub struct TomlTemplate {
     title: String,
-    subfolders: Option<Vec<Vec<String>>>,
+    subfolders: Option<Vec<PathBuf>>,
     scripts: Option<Scripts>,
-    dependencies: Option<Dependencies>,
+    dependencies: Dependencies,
 }
 
 type Dependencies = HashMap<String, Vec<Module>>;
@@ -19,8 +19,41 @@ type Scripts = HashMap<String, HashMap<String, String>>;
 
 #[allow(unused)]
 impl TomlTemplate {
-    pub fn parse_deps(path: &Path) -> Option<Dependencies> {
-        let table = Self::get_table(path).expect("Error parsing toml");
+    pub fn new(path: &Path) -> Self {
+        let table = Self::get_table(path);
+        let title = match table.get("title") {
+            Some(title) => title.as_str().expect("Error parsing title"),
+            None => panic!("No title key in table"),
+        };
+        let subfolders = Self::parse_subfolders(&table);
+        let scripts = Self::parse_scripts(&table);
+        let dependencies = Self::parse_deps(&table);
+
+        Self {
+            title: title.to_string(),
+            subfolders,
+            scripts,
+            dependencies,
+        }
+    }
+
+    pub fn get_title(&self) -> &str {
+        &self.title
+    }
+
+    pub fn get_subfolders(&self) -> Option<&Vec<PathBuf>> {
+        self.subfolders.as_ref()
+    }
+
+    pub fn get_scripts(&self) -> Option<&Scripts> {
+        self.scripts.as_ref()
+    }
+
+    pub fn get_dependencies(&self) -> &Dependencies {
+        &self.dependencies
+    }
+
+    fn parse_deps(table: &Table) -> Dependencies {
         let deps = match table.get("deps") {
             Some(deps) => deps.as_table().expect("Error parsing dependencies"),
             None => panic!("No deps keys found in TOML template file"),
@@ -28,7 +61,8 @@ impl TomlTemplate {
 
         let package_managers = vec!["npm", "cargo", "composer"];
         let parsed_deps = Self::fetch_deps(package_managers, deps);
-        Some(parsed_deps)
+
+        parsed_deps
     }
 
     fn fetch_deps(keys: Vec<&str>, deps: &Table) -> Dependencies {
@@ -93,39 +127,43 @@ impl TomlTemplate {
             .collect()
     }
 
-    fn parse_scripts(path: &Path) -> Option<Scripts> {
-        let table = Self::get_table(path).expect("Error parsing toml");
-        let scripts = match table.get("scripts") {
-            Some(scripts) => scripts.as_table().expect("Error parsing dependencies"),
-            None => panic!("No deps key in table"),
-        };
-
-        let npm_scripts = match scripts.get("npm") {
-            Some(entries) => {
-                let mut scripts = HashMap::new();
-                entries
-                    .as_table()
-                    .expect("Error extracting npm scripts table")
-                    .iter()
-                    .for_each(|(key, val)| {
-                        scripts.insert(
-                            key.to_string(),
-                            val.as_str().expect("Error parsing script").to_string(),
-                        );
-                    });
-                scripts
+    fn parse_scripts(table: &Map<String, Value>) -> Option<Scripts> {
+        let package_managers = vec!["npm", "cargo", "composer"];
+        match table.get("scripts") {
+            Some(scripts) => {
+                let scripts_table = scripts.as_table().expect("Error parsing dependencies");
+                Some(Self::format_scripts(package_managers, scripts_table))
             }
-            None => HashMap::new(),
-        };
-
-        let mut scripts = HashMap::new();
-        scripts.insert("npm".to_string(), npm_scripts);
-
-        Some(scripts)
+            None => None,
+        }
     }
 
-    fn parse_subfolders(path: &Path) -> Option<Vec<PathBuf>> {
-        let table = Self::get_table(path).expect("Error parsing toml");
+    fn format_scripts(keys: Vec<&str>, table: &Table) -> Scripts {
+        let mut results = HashMap::new();
+        keys.iter().for_each(|key| {
+            match table.get(*key) {
+                Some(entries) => {
+                    let mut scripts = HashMap::new();
+                    entries
+                        .as_table()
+                        .expect("Error extracting npm scripts table")
+                        .iter()
+                        .for_each(|(key, val)| {
+                            scripts.insert(
+                                key.to_string(),
+                                val.as_str().expect("Error parsing script").to_string(),
+                            );
+                        });
+                    results.insert(key.to_string(), scripts);
+                }
+                None => (),
+            };
+        });
+
+        results
+    }
+
+    fn parse_subfolders(table: &Map<String, Value>) -> Option<Vec<PathBuf>> {
         let subfolders = match table.get("subfolders") {
             Some(subfolders) => Some(subfolders.as_table().expect("Error parsing subfolders")),
             None => {
@@ -168,10 +206,10 @@ impl TomlTemplate {
         paths
     }
 
-    fn get_table(path: &Path) -> Option<Table> {
+    fn get_table(path: &Path) -> Table {
         let template_str = fs::read_to_string(path).expect("Error reading file");
         let table = template_str.parse::<Table>().expect("Error parsing toml");
-        Some(table)
+        table
     }
 }
 
@@ -182,22 +220,27 @@ pub mod tests {
 
     use super::*;
 
-    fn get_deps_table() -> Map<String, Value> {
-        let path = Path::new("test/__mocks__/_test.toml");
-        let toml_table = TomlTemplate::get_table(path).expect("Error parsing toml");
-        let deps_table = match toml_table.get("deps") {
-            Some(deps) => deps.as_table().expect("Error parsing dependencies"),
-            None => panic!("No deps keys found in TOML template file"),
-        };
-        deps_table.to_owned()
-    }
-
     #[test]
     fn test_parse_toml() {
         let path = Path::new("test/__mocks__/_test.toml");
-        let template_str = fs::read_to_string(path).expect("Error reading file");
-        let table = template_str.parse::<Table>().expect("Error parsing toml");
-        assert_eq!(table["title"].as_str(), Some("toml_test_template"));
+        let table = TomlTemplate::new(path);
+
+        let title = table.get_title();
+        let deps_table = table.get_dependencies();
+        let scripts_table = table.get_scripts().expect("No scripts extracted");
+        let subfolders = table.get_subfolders().expect("No subfolders extracted");
+
+        assert_eq!(title, "toml_test_template");
+
+        assert!(deps_table.contains_key("npm"));
+        assert!(deps_table.contains_key("cargo"));
+        assert!(deps_table.contains_key("composer"));
+
+        assert!(scripts_table.contains_key("npm"));
+        assert!(scripts_table.contains_key("cargo"));
+        assert!(scripts_table.contains_key("composer"));
+
+        assert!(!subfolders.is_empty());
     }
 
     #[test]
@@ -305,7 +348,8 @@ pub mod tests {
     #[test]
     fn extract_npm_scripts() {
         let path = Path::new("test/__mocks__/_test.toml");
-        let parsed_scripts = TomlTemplate::parse_scripts(path).expect("Error parsing deps");
+        let table = TomlTemplate::get_table(path);
+        let parsed_scripts = TomlTemplate::parse_scripts(&table).expect("Error parsing deps");
 
         assert!(parsed_scripts.contains_key("npm"));
         let npm_scripts = parsed_scripts
@@ -319,9 +363,27 @@ pub mod tests {
     }
 
     #[test]
+    fn extract_composer_scripts() {
+        let path = Path::new("test/__mocks__/_test.toml");
+        let table = TomlTemplate::get_table(path);
+        let parsed_scripts = TomlTemplate::parse_scripts(&table).expect("Error parsing deps");
+
+        assert!(parsed_scripts.contains_key("composer"));
+        let npm_scripts = parsed_scripts
+            .get("composer")
+            .expect("Error getting composer scripts");
+
+        assert_eq!(npm_scripts["dev"], "test dev");
+        assert_eq!(npm_scripts["start"], "test prod");
+        assert_eq!(npm_scripts["build"], "test build");
+        assert_eq!(npm_scripts["preview"], "test preview");
+    }
+
+    #[test]
     fn extract_subfolders() {
         let path = Path::new("test/__mocks__/_test.toml");
-        let folder_tree = TomlTemplate::parse_subfolders(path);
+        let table = TomlTemplate::get_table(path);
+        let folder_tree = TomlTemplate::parse_subfolders(&table);
 
         assert!(folder_tree.is_some());
         let folder_tree = folder_tree.unwrap();
@@ -336,5 +398,16 @@ pub mod tests {
         assert!(folder_tree.contains(&PathBuf::from("single_depth/double_depth/l2foo")));
         assert!(folder_tree.contains(&PathBuf::from("single_depth/double_depth/l2bar")));
         assert!(folder_tree.contains(&PathBuf::from("single_depth/double_depth/l2baz")));
+    }
+
+    // Helpers
+    fn get_deps_table() -> Map<String, Value> {
+        let path = Path::new("test/__mocks__/_test.toml");
+        let toml_table = TomlTemplate::get_table(path);
+        let deps_table = match toml_table.get("deps") {
+            Some(deps) => deps.as_table().expect("Error parsing dependencies"),
+            None => panic!("No deps keys found in TOML template file"),
+        };
+        deps_table.to_owned()
     }
 }
