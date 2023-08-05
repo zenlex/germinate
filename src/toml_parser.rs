@@ -4,10 +4,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use toml::Table;
-
 use crate::module::Module;
-
+use toml::{Table, Value};
 #[allow(unused)]
 pub struct TomlTemplate {
     title: String,
@@ -25,63 +23,74 @@ impl TomlTemplate {
         let table = Self::get_table(path).expect("Error parsing toml");
         let deps = match table.get("deps") {
             Some(deps) => deps.as_table().expect("Error parsing dependencies"),
-            None => panic!("No deps key in table"),
+            None => panic!("No deps keys found in TOML template file"),
         };
 
-        let npm_deps: Vec<_> = match deps.get("npm") {
-            Some(entries) => {
-                entries
-                    .as_array()
-                    .expect("Error parsing npm dependencies")
-                    .iter()
-                    .map(|dep| {
-                        let dep = dep.as_table().expect("Error parsing dep");
-                        let name = match dep.get("name") {
-                            Some(name) => name.as_str().expect("Error parsing name"),
-                            None => panic!("Error parsing name"),
-                        };
+        let package_managers = vec!["npm", "cargo", "composer"];
+        let parsed_deps = Self::fetch_deps(package_managers, deps);
+        Some(parsed_deps)
+    }
 
-                        //TODO: add semver crate to allow for parsing semver ranges
-                        let version = match dep.get("version") {
-                            Some(version) => version.as_str().expect("Error parsing version"),
-                            None => "latest",
-                        };
+    fn fetch_deps(keys: Vec<&str>, deps: &Table) -> Dependencies {
+        let mut results = HashMap::new();
+        keys.iter().for_each(|key| {
+            let packages: Vec<_> = match deps.get(*key) {
+                Some(entries) => {
+                    let entries = entries
+                        .as_array()
+                        .expect(format!("Error retrieving {} dependencies", key).as_str());
+                    println!("Collecting {} dependencies", key);
+                    Self::format_deps(entries)
+                }
+                None => Vec::new(),
+            };
+            results.insert(key.to_string(), packages);
+        });
+        results
+    }
 
-                        let dev = match dep.get("dev") {
-                            Some(dev) => dev.as_bool().expect("Error parsing dev"),
-                            None => false,
-                        };
+    fn format_deps(table: &Vec<Value>) -> Vec<Module> {
+        table
+            .iter()
+            .map(|dep| {
+                let dep = dep.as_table().expect("Error collecting deps");
+                let name = match dep.get("name") {
+                    Some(name) => name.as_str().expect("Error parsing name"),
+                    None => panic!("Error parsing name"),
+                };
 
-                        let then = match dep.get("then") {
-                            Some(cmds) => {
-                                let cmds = cmds
-                                    .as_array()
-                                    .expect("Error parsing then array")
+                //TODO: add semver crate to allow for parsing semver ranges
+                let version = match dep.get("version") {
+                    Some(version) => version.as_str().expect("Error parsing version"),
+                    None => "latest",
+                };
+
+                let dev = match dep.get("dev") {
+                    Some(dev) => dev.as_bool().expect("Error parsing dev"),
+                    None => false,
+                };
+
+                let then = match dep.get("then") {
+                    Some(cmds) => {
+                        let cmds = cmds
+                            .as_array()
+                            .expect("Error parsing then array")
+                            .iter()
+                            .map(|arr| arr.as_array().expect("Error parsing cmd"))
+                            .map(|cmd_arr| {
+                                cmd_arr
                                     .iter()
-                                    .map(|arr| arr.as_array().expect("Error parsing cmd"))
-                                    .map(|cmd_arr| {
-                                        cmd_arr
-                                            .iter()
-                                            .map(|arg| {
-                                                arg.as_str().expect("Error parsing arg").to_string()
-                                            })
-                                            .collect()
-                                    })
-                                    .collect();
-                                Some(cmds)
-                            }
-                            None => None,
-                        };
-                        Module::new(name.to_string(), version.to_string(), dev, then)
-                    })
-                    .collect()
-            }
-            None => Vec::new(),
-        };
-
-        let mut deps = HashMap::new();
-        deps.insert("npm".to_string(), npm_deps);
-        Some(deps)
+                                    .map(|arg| arg.as_str().expect("Error parsing arg").to_string())
+                                    .collect()
+                            })
+                            .collect();
+                        Some(cmds)
+                    }
+                    None => None,
+                };
+                Module::new(name.to_string(), version.to_string(), dev, then)
+            })
+            .collect()
     }
 
     fn parse_scripts(path: &Path) -> Option<Scripts> {
@@ -167,8 +176,21 @@ impl TomlTemplate {
 }
 
 #[cfg(test)]
+
 pub mod tests {
+    use toml::map::Map;
+
     use super::*;
+
+    fn get_deps_table() -> Map<String, Value> {
+        let path = Path::new("test/__mocks__/_test.toml");
+        let toml_table = TomlTemplate::get_table(path).expect("Error parsing toml");
+        let deps_table = match toml_table.get("deps") {
+            Some(deps) => deps.as_table().expect("Error parsing dependencies"),
+            None => panic!("No deps keys found in TOML template file"),
+        };
+        deps_table.to_owned()
+    }
 
     #[test]
     fn test_parse_toml() {
@@ -179,9 +201,18 @@ pub mod tests {
     }
 
     #[test]
-    fn extract_npm_deps() {
-        let path = Path::new("test/__mocks__/_test.toml");
-        let parsed_deps = TomlTemplate::parse_deps(path).expect("Error parsing deps");
+    fn test_parse_deps() {
+        let deps_table = get_deps_table();
+        let parsed_deps = TomlTemplate::fetch_deps(vec!["npm", "cargo", "composer"], &deps_table);
+        assert!(parsed_deps.contains_key("npm"));
+        assert!(parsed_deps.contains_key("cargo"));
+        assert!(parsed_deps.contains_key("composer"));
+    }
+
+    #[test]
+    fn fetch_npm_deps() {
+        let deps_table = get_deps_table();
+        let parsed_deps = TomlTemplate::fetch_deps(vec!["npm"], &deps_table);
         assert!(parsed_deps.contains_key("npm"));
 
         let npm_deps = &parsed_deps["npm"];
@@ -195,6 +226,68 @@ pub mod tests {
         let full_dev_dep = npm_deps
             .iter()
             .find(|dep| dep.get_name() == "test_npm_dev_dep_full")
+            .expect("Error finding dep");
+        assert_eq!(full_dev_dep.get_version(), "^1.0.0");
+        assert_eq!(full_dev_dep.is_dev(), true);
+
+        let then_cmds = full_dev_dep.get_then().expect("Error getting then cmds");
+        assert_eq!(then_cmds.len(), 2);
+        assert_eq!(then_cmds[0].len(), 1);
+        assert_eq!(then_cmds[1].len(), 3);
+        assert_eq!(then_cmds[0][0], "naked_command");
+        assert_eq!(then_cmds[1][0], "command_with_args");
+        assert_eq!(then_cmds[1][1], "arg1");
+        assert_eq!(then_cmds[1][2], "arg2");
+    }
+
+    #[test]
+    fn fetch_cargo_deps() {
+        let deps_table = get_deps_table();
+        let parsed_deps = TomlTemplate::fetch_deps(vec!["cargo"], &deps_table);
+        assert!(parsed_deps.contains_key("cargo"));
+
+        let cargo_deps = &parsed_deps["cargo"];
+        assert!(cargo_deps
+            .iter()
+            .any(|dep| dep.get_name() == "test_cargo_dep_min"));
+        assert!(cargo_deps
+            .iter()
+            .any(|dep| dep.get_name() == "test_cargo_dev_dep_full"));
+
+        let full_dev_dep = cargo_deps
+            .iter()
+            .find(|dep| dep.get_name() == "test_cargo_dev_dep_full")
+            .expect("Error finding dep");
+        assert_eq!(full_dev_dep.get_version(), "^1.0.0");
+        assert_eq!(full_dev_dep.is_dev(), true);
+
+        let then_cmds = full_dev_dep.get_then().expect("Error getting then cmds");
+        assert_eq!(then_cmds.len(), 2);
+        assert_eq!(then_cmds[0].len(), 1);
+        assert_eq!(then_cmds[1].len(), 3);
+        assert_eq!(then_cmds[0][0], "naked_command");
+        assert_eq!(then_cmds[1][0], "command_with_args");
+        assert_eq!(then_cmds[1][1], "arg1");
+        assert_eq!(then_cmds[1][2], "arg2");
+    }
+
+    #[test]
+    fn fetch_composer_deps() {
+        let deps_table = get_deps_table();
+        let parsed_deps = TomlTemplate::fetch_deps(vec!["composer"], &deps_table);
+        assert!(parsed_deps.contains_key("composer"));
+
+        let composer_deps = &parsed_deps["composer"];
+        assert!(composer_deps
+            .iter()
+            .any(|dep| dep.get_name() == "test_composer_dep_min"));
+        assert!(composer_deps
+            .iter()
+            .any(|dep| dep.get_name() == "test_composer_dev_dep_full"));
+
+        let full_dev_dep = composer_deps
+            .iter()
+            .find(|dep| dep.get_name() == "test_composer_dev_dep_full")
             .expect("Error finding dep");
         assert_eq!(full_dev_dep.get_version(), "^1.0.0");
         assert_eq!(full_dev_dep.is_dev(), true);

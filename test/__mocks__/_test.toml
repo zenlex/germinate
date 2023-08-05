@@ -24,12 +24,33 @@ l2baz = {}
 "build" = "test build"
 "preview" = "test preview"
 
-#Dependencies
+# Dependencies
+# NPM
 [[deps.npm]]
 name = "test_npm_dep_min"
 
 [[deps.npm]]
 name = "test_npm_dev_dep_full"
+version = "^1.0.0"
+dev = true 
+then=[["naked_command"], ["command_with_args", "arg1", "arg2"]]
+
+# CARGO
+[[deps.cargo]]
+name = "test_cargo_dep_min"
+
+[[deps.cargo]]
+name = "test_cargo_dev_dep_full"
+version = "^1.0.0"
+dev = true 
+then=[["naked_command"], ["command_with_args", "arg1", "arg2"]]
+
+# COMPOSER
+[[deps.composer]]
+name = "test_composer_dep_min"
+
+[[deps.composer]]
+name = "test_composer_dev_dep_full"
 version = "^1.0.0"
 dev = true 
 then=[["naked_command"], ["command_with_args", "arg1", "arg2"]]
