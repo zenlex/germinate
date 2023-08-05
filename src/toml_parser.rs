@@ -7,6 +7,7 @@ use std::{
 use crate::module::Module;
 use toml::{map::Map, Table, Value};
 #[allow(unused)]
+#[derive(Debug, Clone)]
 pub struct TomlTemplate {
     title: String,
     subfolders: Option<Vec<PathBuf>>,
@@ -223,12 +224,12 @@ pub mod tests {
     #[test]
     fn test_parse_toml() {
         let path = Path::new("test/__mocks__/_test.toml");
-        let table = TomlTemplate::new(path);
+        let template = TomlTemplate::new(path);
 
-        let title = table.get_title();
-        let deps_table = table.get_dependencies();
-        let scripts_table = table.get_scripts().expect("No scripts extracted");
-        let subfolders = table.get_subfolders().expect("No subfolders extracted");
+        let title = template.get_title();
+        let deps_table = template.get_dependencies();
+        let scripts_table = template.get_scripts().expect("No scripts extracted");
+        let subfolders = template.get_subfolders().expect("No subfolders extracted");
 
         assert_eq!(title, "toml_test_template");
 

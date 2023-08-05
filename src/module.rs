@@ -12,6 +12,8 @@ pub struct Module {
     then: Option<ThenCommands>,
 }
 
+type ThenCommands = Vec<Vec<String>>;
+
 #[allow(unused)]
 impl Module {
     pub fn new(name: String, version: String, dev: bool, then: Option<ThenCommands>) -> Self {
@@ -39,5 +41,3 @@ impl Module {
         self.then.as_ref()
     }
 }
-
-type ThenCommands = Vec<Vec<String>>;
