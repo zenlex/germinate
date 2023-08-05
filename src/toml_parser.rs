@@ -1,40 +1,25 @@
-//TODO: create PackageManager trait with parse_deps, install_deps and generate_commands behaviors - might be able to just impl the toml deserializer trait for the ParseDeps part?)
-//TODO: Create a struct for each package manager that implements the PackageManager trait and an Enum that holds those structs
-// TODO: Create a builder struct that runs the package manager install command for each package manager (CargoBuilder, NpmBuilder, ComposerBuilder, etc)
-// TODO: Create a projectBuilder struct that creates the folders, runs the package manager builders, runs the docker builder, db builder, etc.
-//TODO: extract npm specific stuff to npm module and add composer and cargo modules
-use std::{collections::HashMap, fs, path::Path};
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+};
+
 use toml::Table;
 
-type Dependencies = HashMap<String, Vec<Module>>;
-type Scripts = HashMap<String, HashMap<String, String>>;
-type ThenCommands = Vec<Vec<String>>;
-#[derive(Debug, Clone)]
-pub struct Module {
-    name: String,
-    version: String,
-    dev: bool,
-    then: Option<ThenCommands>,
-}
+use crate::module::Module;
 
-impl Module {
-    pub fn new(name: String, version: String, dev: bool, then: Option<ThenCommands>) -> Self {
-        Self {
-            name,
-            version,
-            dev,
-            then,
-        }
-    }
-}
-
-struct TomlTemplate {
+#[allow(unused)]
+pub struct TomlTemplate {
     title: String,
     subfolders: Option<Vec<Vec<String>>>,
     scripts: Option<Scripts>,
     dependencies: Option<Dependencies>,
 }
 
+type Dependencies = HashMap<String, Vec<Module>>;
+type Scripts = HashMap<String, HashMap<String, String>>;
+
+#[allow(unused)]
 impl TomlTemplate {
     pub fn parse_deps(path: &Path) -> Option<Dependencies> {
         let table = Self::get_table(path).expect("Error parsing toml");
@@ -130,6 +115,50 @@ impl TomlTemplate {
         Some(scripts)
     }
 
+    fn parse_subfolders(path: &Path) -> Option<Vec<PathBuf>> {
+        let table = Self::get_table(path).expect("Error parsing toml");
+        let subfolders = match table.get("subfolders") {
+            Some(subfolders) => Some(subfolders.as_table().expect("Error parsing subfolders")),
+            None => {
+                println!("No subfolders key in table");
+                None
+            }
+        };
+
+        let mut paths: Vec<PathBuf> = vec![];
+        if subfolders.is_some() {
+            let subfolders = subfolders.unwrap();
+            let path = Path::new("");
+            let mut child_paths: Vec<PathBuf> = subfolders
+                .iter()
+                .flat_map(|child| Self::get_sub_paths(child, &path))
+                .collect();
+            paths.append(&mut child_paths);
+        } else {
+            println!("No subfolders key in table");
+        }
+        Some(paths)
+    }
+
+    fn get_sub_paths((name, children): (&String, &toml::Value), path: &Path) -> Vec<PathBuf> {
+        let mut paths: Vec<PathBuf> = vec![];
+        let children = children
+            .as_table()
+            .expect("Error parsing subfolder children");
+        if children.is_empty() {
+            paths.push(path.join(name));
+        } else {
+            let path = path.join(name);
+            let mut child_paths: Vec<PathBuf> = children
+                .iter()
+                .flat_map(|child| Self::get_sub_paths(child, &path))
+                .collect();
+            paths.append(&mut child_paths);
+        }
+
+        paths
+    }
+
     fn get_table(path: &Path) -> Option<Table> {
         let template_str = fs::read_to_string(path).expect("Error reading file");
         let table = template_str.parse::<Table>().expect("Error parsing toml");
@@ -137,14 +166,8 @@ impl TomlTemplate {
     }
 }
 
-pub type NpmDeps = Vec<Module>;
-pub type CargoDeps = Vec<Module>;
-pub type ComposerDeps = Vec<Module>;
-
-// ? refactor TomlTemplate construction to deserialize traits for toml? (move extractors to trait impls per toml crate and update struct so we can deserialize direct to TomlTemplate)
 #[cfg(test)]
 pub mod tests {
-
     use super::*;
 
     #[test]
@@ -162,19 +185,21 @@ pub mod tests {
         assert!(parsed_deps.contains_key("npm"));
 
         let npm_deps = &parsed_deps["npm"];
-        assert!(npm_deps.iter().any(|dep| dep.name == "test_npm_dep_min"));
         assert!(npm_deps
             .iter()
-            .any(|dep| dep.name == "test_npm_dev_dep_full"));
+            .any(|dep| dep.get_name() == "test_npm_dep_min"));
+        assert!(npm_deps
+            .iter()
+            .any(|dep| dep.get_name() == "test_npm_dev_dep_full"));
 
         let full_dev_dep = npm_deps
             .iter()
-            .find(|dep| dep.name == "test_npm_dev_dep_full")
+            .find(|dep| dep.get_name() == "test_npm_dev_dep_full")
             .expect("Error finding dep");
-        assert_eq!(full_dev_dep.version, "^1.0.0");
-        assert_eq!(full_dev_dep.dev, true);
+        assert_eq!(full_dev_dep.get_version(), "^1.0.0");
+        assert_eq!(full_dev_dep.is_dev(), true);
 
-        let then_cmds = full_dev_dep.then.as_ref().unwrap();
+        let then_cmds = full_dev_dep.get_then().expect("Error getting then cmds");
         assert_eq!(then_cmds.len(), 2);
         assert_eq!(then_cmds[0].len(), 1);
         assert_eq!(then_cmds[1].len(), 3);
@@ -198,5 +223,25 @@ pub mod tests {
         assert_eq!(npm_scripts["start"], "test prod");
         assert_eq!(npm_scripts["build"], "test build");
         assert_eq!(npm_scripts["preview"], "test preview");
+    }
+
+    #[test]
+    fn extract_subfolders() {
+        let path = Path::new("test/__mocks__/_test.toml");
+        let folder_tree = TomlTemplate::parse_subfolders(path);
+
+        assert!(folder_tree.is_some());
+        let folder_tree = folder_tree.unwrap();
+
+        assert_eq!(folder_tree.len(), 9);
+        assert!(folder_tree.contains(&PathBuf::from("l0foo")));
+        assert!(folder_tree.contains(&PathBuf::from("l0bar")));
+        assert!(folder_tree.contains(&PathBuf::from("l0baz")));
+        assert!(folder_tree.contains(&PathBuf::from("single_depth/l1foo")));
+        assert!(folder_tree.contains(&PathBuf::from("single_depth/l1bar")));
+        assert!(folder_tree.contains(&PathBuf::from("single_depth/l1baz")));
+        assert!(folder_tree.contains(&PathBuf::from("single_depth/double_depth/l2foo")));
+        assert!(folder_tree.contains(&PathBuf::from("single_depth/double_depth/l2bar")));
+        assert!(folder_tree.contains(&PathBuf::from("single_depth/double_depth/l2baz")));
     }
 }

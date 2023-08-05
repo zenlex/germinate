@@ -1,5 +1,7 @@
+#[allow(warnings)]
 mod config;
 mod module;
+mod toml_parser;
 
 use clap::{Parser, ValueEnum};
 use std::path::PathBuf;

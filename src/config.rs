@@ -10,8 +10,11 @@ use std::{
 use slug::slugify;
 use strum::{EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
 
-use crate::module::{CargoDeps, ComposerDeps, NpmDeps};
-use crate::StackTemplate;
+use crate::{module::Module, StackTemplate};
+
+type NpmDeps = Vec<Module>;
+type CargoDeps = Vec<Module>;
+type ComposerDeps = Vec<Module>;
 
 #[derive(Debug, Clone)]
 pub struct ScaffoldConfig {

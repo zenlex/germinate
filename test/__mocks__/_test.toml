@@ -2,9 +2,20 @@
 title = "toml_test_template"
 description = "Template for testing parsing"
 
-[subfolders] 
-public = []
-src = ["pages", "layouts", "components"] 
+[subfolders]
+l0foo = {}
+l0bar = {}
+l0baz = {}
+
+[subfolders.single_depth] 
+l1foo = {} 
+l1bar = {} 
+l1baz = {}
+
+[subfolders.single_depth.double_depth]
+l2foo = {}
+l2bar = {}
+l2baz = {}
 
 # Scripts
 [scripts.npm]
