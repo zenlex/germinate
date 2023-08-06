@@ -226,6 +226,7 @@ pub mod tests {
         let path = Path::new("test/__mocks__/_test.toml");
         let template = TomlTemplate::new(path);
 
+        dbg!(&template);
         let title = template.get_title();
         let deps_table = template.get_dependencies();
         let scripts_table = template.get_scripts().expect("No scripts extracted");
@@ -388,6 +389,7 @@ pub mod tests {
 
         assert!(folder_tree.is_some());
         let folder_tree = folder_tree.unwrap();
+        dbg!(&folder_tree);
 
         assert_eq!(folder_tree.len(), 9);
         assert!(folder_tree.contains(&PathBuf::from("l0foo")));

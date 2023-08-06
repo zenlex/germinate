@@ -10,7 +10,7 @@ use std::{
 use slug::slugify;
 use strum::{EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
 
-use crate::{module::Module, StackTemplate};
+use crate::{module::Module, toml_parser::TomlTemplate, StackTemplate};
 
 type NpmDeps = Vec<Module>;
 type CargoDeps = Vec<Module>;
@@ -18,6 +18,7 @@ type ComposerDeps = Vec<Module>;
 
 #[derive(Debug, Clone)]
 pub struct ScaffoldConfig {
+    toml_template: PathBuf,
     languages: Vec<Language>,
     web_frameworks: Option<Vec<WebFramework>>,
     test_frameworks: Vec<TestFramework>,
@@ -35,6 +36,7 @@ impl ScaffoldConfig {
     pub fn new(options: UserOptions) -> Self {
         match options.stack {
             StackTemplate::SSRJS => Self {
+                toml_template: options.stack.get_path(),
                 languages: vec![Language::TypeScript, Language::JavaScript], // make sure lang is installed
                 web_frameworks: Some(vec![WebFramework::Astro, WebFramework::Vue]), // ? handle from TOML?
                 test_frameworks: vec![TestFramework::Vitest], // ? handle from TOML?
@@ -48,6 +50,7 @@ impl ScaffoldConfig {
                 cargo_deps: vec![],
             },
             _ => Self {
+                toml_template: options.stack.get_path(),
                 languages: vec![],
                 web_frameworks: None,
                 test_frameworks: vec![],

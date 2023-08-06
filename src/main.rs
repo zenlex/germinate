@@ -1,3 +1,4 @@
+mod builder;
 #[allow(warnings)]
 mod config;
 mod module;
@@ -7,7 +8,7 @@ use clap::{Parser, ValueEnum};
 use std::path::PathBuf;
 use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames};
 
-use crate::config::ScaffoldConfig;
+use crate::{builder::ProjectBuilder, config::ScaffoldConfig};
 
 #[derive(Debug, Clone, EnumVariantNames, EnumString, ValueEnum, EnumIter, EnumProperty)]
 pub enum StackTemplate {
@@ -25,6 +26,20 @@ pub enum StackTemplate {
     TSAPI,
     #[strum(props(Label = "Rust API (backend only)"))]
     RSAPI,
+}
+
+impl StackTemplate {
+    pub fn get_path(&self) -> PathBuf {
+        match self {
+            Self::SSRJS => PathBuf::from("templates/ssr-js.toml"),
+            Self::SPAJS => PathBuf::from("templates/spa-js.toml"),
+            Self::Laravel => PathBuf::from("templates/laravel.toml"),
+            Self::TSCLI => PathBuf::from("templates/ts-cli.toml"),
+            Self::RSCLI => PathBuf::from("templates/rs-cli.toml"),
+            Self::TSAPI => PathBuf::from("templates/ts-api.toml"),
+            Self::RSAPI => PathBuf::from("templates/rs-api.toml"),
+        }
+    }
 }
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about= None)]
@@ -46,6 +61,8 @@ fn main() {
     let app_config = ScaffoldConfig::new(user_config);
     println!("->> APP_CONFIG: {:?}", app_config);
 
+    let builder = ProjectBuilder::new(app_config);
+    builder.build();
     // run scaffolding engine
     //? Create a Builder for the App Config, and then we may also need sub builders for depencies and such
     //? Builder should parse the toml file for the stack to populate the config and then: create folders, install dependencies, template dockerfile, build docker image, create commit and push to git repo
