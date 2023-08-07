@@ -31,13 +31,13 @@ pub enum StackTemplate {
 impl StackTemplate {
     pub fn get_path(&self) -> PathBuf {
         match self {
-            Self::SSRJS => PathBuf::from("templates/ssr-js.toml"),
-            Self::SPAJS => PathBuf::from("templates/spa-js.toml"),
-            Self::Laravel => PathBuf::from("templates/laravel.toml"),
-            Self::TSCLI => PathBuf::from("templates/ts-cli.toml"),
-            Self::RSCLI => PathBuf::from("templates/rs-cli.toml"),
-            Self::TSAPI => PathBuf::from("templates/ts-api.toml"),
-            Self::RSAPI => PathBuf::from("templates/rs-api.toml"),
+            Self::SSRJS => PathBuf::from("templates/ssrjs/stack_template.toml"),
+            Self::SPAJS => PathBuf::from("templates/spajs/stack_template.toml"),
+            Self::Laravel => PathBuf::from("templates/laravel/stack_template.toml"),
+            Self::TSCLI => PathBuf::from("templates/tscli/stack_template.toml"),
+            Self::RSCLI => PathBuf::from("templates/rscli/stack_template.toml"),
+            Self::TSAPI => PathBuf::from("templates/tsapi/stack_template.toml"),
+            Self::RSAPI => PathBuf::from("templates/rsapi/stack_template.toml"),
         }
     }
 }
@@ -59,7 +59,8 @@ fn main() {
 
     // create config
     let app_config = ScaffoldConfig::new(user_config);
-    println!("->> APP_CONFIG: {:?}", app_config);
+    println!("->> APP_CONFIG: ");
+    dbg!(&app_config);
 
     let builder = ProjectBuilder::new(app_config);
     builder.build();

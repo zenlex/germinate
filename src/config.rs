@@ -18,7 +18,8 @@ type ComposerDeps = Vec<Module>;
 
 #[derive(Debug, Clone)]
 pub struct ScaffoldConfig {
-    toml_template: PathBuf,
+    title: String,
+    root_dir: PathBuf,
     languages: Vec<Language>,
     web_frameworks: Option<Vec<WebFramework>>,
     test_frameworks: Vec<TestFramework>,
@@ -30,13 +31,19 @@ pub struct ScaffoldConfig {
     npm_deps: NpmDeps,
     composer_deps: ComposerDeps,
     cargo_deps: CargoDeps,
+    subfolders: Option<Vec<PathBuf>>,
 }
 
 impl ScaffoldConfig {
     pub fn new(options: UserOptions) -> Self {
+        let toml = TomlTemplate::new(&options.stack.get_path());
+        let dependencies = toml.get_dependencies();
+
+        //TODO: refactor out base/common properties
         match options.stack {
             StackTemplate::SSRJS => Self {
-                toml_template: options.stack.get_path(),
+                title: options.app_name,
+                root_dir: PathBuf::from(&options.output_dir),
                 languages: vec![Language::TypeScript, Language::JavaScript], // make sure lang is installed
                 web_frameworks: Some(vec![WebFramework::Astro, WebFramework::Vue]), // ? handle from TOML?
                 test_frameworks: vec![TestFramework::Vitest], // ? handle from TOML?
@@ -45,12 +52,14 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
-                npm_deps: vec![],
-                composer_deps: vec![],
-                cargo_deps: vec![],
+                npm_deps: dependencies.get("npm").unwrap().clone(),
+                composer_deps: dependencies.get("composer").unwrap().clone(),
+                cargo_deps: dependencies.get("cargo").unwrap().clone(),
+                subfolders: toml.get_subfolders().cloned(),
             },
             _ => Self {
-                toml_template: options.stack.get_path(),
+                title: options.app_name,
+                root_dir: PathBuf::from(&options.output_dir),
                 languages: vec![],
                 web_frameworks: None,
                 test_frameworks: vec![],
@@ -59,9 +68,10 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
-                npm_deps: vec![],
-                composer_deps: vec![],
-                cargo_deps: vec![],
+                npm_deps: dependencies.get("npm").unwrap().clone(),
+                composer_deps: dependencies.get("composer").unwrap().clone(),
+                cargo_deps: dependencies.get("cargo").unwrap().clone(),
+                subfolders: toml.get_subfolders().cloned(),
             },
         }
     }

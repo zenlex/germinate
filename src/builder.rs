@@ -1,10 +1,11 @@
-use crate::{config::ScaffoldConfig, toml_parser::TomlTemplate};
+use crate::config::ScaffoldConfig;
 use std::fmt::{self, Debug, Formatter};
 
 pub struct ProjectBuilder {
     config: ScaffoldConfig,
 }
 
+#[allow(unused)]
 impl ProjectBuilder {
     pub fn new(config: ScaffoldConfig) -> Self {
         Self { config }
@@ -15,8 +16,7 @@ impl ProjectBuilder {
     }
 
     pub fn build(&self) {
-        println!("Building project");
-        dbg!(&self.config);
+        println!("Building project...");
     }
 }
 
