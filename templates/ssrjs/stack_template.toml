@@ -3,8 +3,12 @@ title = "ssrjs"
 description ="Full Stack JS/TS with Server Side Rendering"
 
 [subfolders] 
-public = []
-src = ["pages", "layouts", "components"] 
+public = {}
+
+[subfolders.src]
+pages = {} 
+layouts = {} 
+components = {} 
 
 # Scripts
 [scripts.npm]
@@ -18,7 +22,10 @@ src = ["pages", "layouts", "components"]
 name = "astro"
 dev = true
 version = "^0.21.0"
-then=["npm run build", "npm run install"]
+then=[
+	["npm", "run", "build"], 
+	["npm", "run", "install"]
+]
 
 [[deps.npm]]
 name = "@astrojs/vue"
