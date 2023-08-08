@@ -59,8 +59,8 @@ fn main() {
 
     // create config
     let app_config = ScaffoldConfig::new(user_config);
-    println!("->> APP_CONFIG: ");
-    dbg!(&app_config);
+    // println!("->> APP_CONFIG: ");
+    // dbg!(&app_config);
 
     let builder = ProjectBuilder::new(app_config);
     builder.build();

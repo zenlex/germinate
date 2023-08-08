@@ -75,6 +75,14 @@ impl ScaffoldConfig {
             },
         }
     }
+
+    pub fn get_subfolders(&self) -> Option<&Vec<PathBuf>> {
+        self.subfolders.as_ref()
+    }
+
+    pub fn get_root_dir(&self) -> &PathBuf {
+        &self.root_dir
+    }
 }
 
 #[derive(Debug)]
