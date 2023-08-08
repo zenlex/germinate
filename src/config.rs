@@ -83,6 +83,18 @@ impl ScaffoldConfig {
     pub fn get_root_dir(&self) -> &PathBuf {
         &self.root_dir
     }
+
+    pub fn get_npm_deps(&self) -> &NpmDeps {
+        &self.npm_deps
+    }
+
+    pub fn get_cargo_deps(&self) -> &CargoDeps {
+        &self.cargo_deps
+    }
+
+    pub fn get_composer_deps(&self) -> &ComposerDeps {
+        &self.composer_deps
+    }
 }
 
 #[derive(Debug)]
