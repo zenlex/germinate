@@ -1,4 +1,4 @@
-use crate::config::ScaffoldConfig;
+use crate::{config::ScaffoldConfig, module::Module};
 use std::{
     fmt::{self, Debug, Formatter},
     process::Command,
@@ -75,14 +75,8 @@ impl ProjectBuilder {
 
             commands.push(command);
 
-            if let Some(post_install_cmds) = module.get_then() {
-                for cmd in post_install_cmds {
-                    let mut command = Command::new(cmd[0].clone());
-                    for arg in &cmd[1..] {
-                        command.arg(arg);
-                    }
-                    commands.push(command);
-                }
+            if let Some(mut cmds) = self.generate_then_cmds(module) {
+                commands.append(&mut cmds);
             }
         }
 
@@ -91,14 +85,71 @@ impl ProjectBuilder {
 
     fn generate_cargo_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        todo!();
+        for module in self.config.get_cargo_deps() {
+            let mut command = Command::new("cargo");
+            command.arg("add");
+
+            if module.get_version() != "latest" {
+                command.arg(format!("{}@{}", module.get_name(), module.get_version()));
+            } else {
+                command.arg(module.get_name());
+            }
+
+            if module.is_dev() {
+                command.arg("--dev");
+            }
+
+            commands.push(command);
+
+            if let Some(mut cmds) = self.generate_then_cmds(module) {
+                commands.append(&mut cmds);
+            }
+        }
+
         commands
     }
 
     fn generate_composer_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        todo!();
+        for module in self.config.get_composer_deps() {
+            let mut command = Command::new("composer");
+            command.arg("require");
+
+            if module.get_version() != "latest" {
+                command.arg(format!("{}@{}", module.get_name(), module.get_version()));
+            } else {
+                command.arg(module.get_name());
+            }
+
+            if module.is_dev() {
+                command.arg("--dev");
+            }
+
+            commands.push(command);
+
+            if let Some(mut cmds) = self.generate_then_cmds(module) {
+                commands.append(&mut cmds);
+            }
+        }
+
         commands
+    }
+
+    fn generate_then_cmds(&self, module: &Module) -> Option<Vec<Command>> {
+        match module.get_then() {
+            Some(cmds) => {
+                let mut commands = vec![];
+                for cmd in cmds {
+                    let mut command = Command::new(&cmd[0]);
+                    for arg in &cmd[1..] {
+                        command.arg(arg);
+                    }
+                    commands.push(command);
+                }
+                Some(commands)
+            }
+            None => None,
+        }
     }
 }
 
