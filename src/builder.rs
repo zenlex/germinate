@@ -36,11 +36,16 @@ impl ProjectBuilder {
         println!("Making folders...");
         let root_dir = self.config.get_root_dir();
         if let Some(folders) = self.config.get_subfolders() {
+            dbg!(&folders);
             for folder in folders {
                 let full_path = root_dir.join(folder);
                 println!("Creating folder: {:?}", full_path);
-                std::fs::create_dir_all(full_path).unwrap();
+                std::fs::create_dir_all(&full_path)
+                    .expect(format!("Failed to create folder: {:?}", &full_path).as_str());
             }
+        } else {
+            println!("Creating root folder only: {:?}", &root_dir);
+            std::fs::create_dir_all(root_dir).unwrap();
         }
     }
 

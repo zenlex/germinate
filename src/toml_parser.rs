@@ -165,27 +165,23 @@ impl TomlTemplate {
     }
 
     fn parse_subfolders(table: &Map<String, Value>) -> Option<Vec<PathBuf>> {
-        let subfolders = match table.get("subfolders") {
-            Some(subfolders) => Some(subfolders.as_table().expect("Error parsing subfolders")),
+        match table.get("subfolders") {
+            Some(subfolders) => {
+                let subfolders = subfolders.as_table().expect("Error parsing subfolders");
+                let mut paths: Vec<PathBuf> = vec![];
+                let path = Path::new("");
+                let mut child_paths: Vec<PathBuf> = subfolders
+                    .iter()
+                    .flat_map(|child| Self::get_sub_paths(child, &path))
+                    .collect();
+                paths.append(&mut child_paths);
+                Some(paths)
+            }
             None => {
                 println!("No subfolders key in table");
                 None
             }
-        };
-
-        let mut paths: Vec<PathBuf> = vec![];
-        if subfolders.is_some() {
-            let subfolders = subfolders.unwrap();
-            let path = Path::new("");
-            let mut child_paths: Vec<PathBuf> = subfolders
-                .iter()
-                .flat_map(|child| Self::get_sub_paths(child, &path))
-                .collect();
-            paths.append(&mut child_paths);
-        } else {
-            println!("No subfolders key in table");
         }
-        Some(paths)
     }
 
     fn get_sub_paths((name, children): (&String, &toml::Value), path: &Path) -> Vec<PathBuf> {
