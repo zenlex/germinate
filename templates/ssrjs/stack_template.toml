@@ -6,7 +6,7 @@ description ="Full Stack JS/TS with Server Side Rendering"
 public = {}
 
 [subfolders.src]
-pages = {} 
+# pages = {} 
 layouts = {} 
 components = {} 
 
@@ -21,11 +21,8 @@ components = {}
 [[deps.npm]]
 name = "astro"
 dev = true
-version = "^0.21.0"
-then=[
-	["npm", "run", "build"], 
-	["npm", "run", "install"]
-]
+version = "latest"
+then=[]
 
 [[deps.npm]]
 name = "@astrojs/vue"
