@@ -28,9 +28,9 @@ pub struct ScaffoldConfig {
     cms: Option<CMS>,
     linters: Vec<Linter>,
     formatters: Vec<Formatter>,
-    npm_deps: NpmDeps,
-    composer_deps: ComposerDeps,
-    cargo_deps: CargoDeps,
+    npm_deps: Option<NpmDeps>,
+    composer_deps: Option<ComposerDeps>,
+    cargo_deps: Option<CargoDeps>,
     subfolders: Option<Vec<PathBuf>>,
 }
 
@@ -52,7 +52,7 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
-                npm_deps: dependencies.get("npm").unwrap().clone(),
+                npm_deps: dependencies.get("npm").unwrap_or(&None).clone(),
                 composer_deps: dependencies.get("composer").unwrap().clone(),
                 cargo_deps: dependencies.get("cargo").unwrap().clone(),
                 subfolders: toml.get_subfolders().cloned(),
@@ -84,15 +84,15 @@ impl ScaffoldConfig {
         &self.root_dir
     }
 
-    pub fn get_npm_deps(&self) -> &NpmDeps {
+    pub fn get_npm_deps(&self) -> &Option<NpmDeps> {
         &self.npm_deps
     }
 
-    pub fn get_cargo_deps(&self) -> &CargoDeps {
+    pub fn get_cargo_deps(&self) -> &Option<CargoDeps> {
         &self.cargo_deps
     }
 
-    pub fn get_composer_deps(&self) -> &ComposerDeps {
+    pub fn get_composer_deps(&self) -> &Option<ComposerDeps> {
         &self.composer_deps
     }
 }

@@ -25,11 +25,20 @@ impl ProjectBuilder {
         self.make_folders();
         // generate install commands
         let commands = self.get_install_commands();
-        dbg!(&commands);
-        // run install commands
 
-        // (build templates as needed)
-        // copy templates
+        // run install commands
+        std::env::set_current_dir(self.config.get_root_dir())
+            .expect("Failed to set current directory");
+        for mut command in commands {
+            println!("Running command: {:?}", command);
+            let output = command.output().expect("Failed to execute command");
+            println!("->> STDOUT: {}", String::from_utf8_lossy(&output.stdout));
+            println!("->> STDERR: {}", String::from_utf8_lossy(&output.stderr));
+        }
+
+        //TODO:  (build templates / set scripts / update manifests / containerize as needed)
+        // TODO: improve logging during build
+        // copy templates over to project
     }
 
     fn make_folders(&self) {
@@ -51,8 +60,9 @@ impl ProjectBuilder {
 
     fn get_install_commands(&self) -> Vec<Command> {
         println!("Queueing install commands...");
-        println!("->> NPM: {:?}", self.config.get_npm_deps());
         let mut commands = vec![];
+        commands.append(&mut self.generate_init_cmds());
+        println!("->> NPM: {:?}", self.config.get_npm_deps());
         commands.append(&mut self.generate_npm_cmds());
         println!("->> CARGO: {:?}", self.config.get_cargo_deps());
         commands.append(&mut self.generate_cargo_cmds());
@@ -62,26 +72,37 @@ impl ProjectBuilder {
         commands
     }
 
+    fn generate_init_cmds(&self) -> Vec<Command> {
+        let mut commands = vec![];
+        let mut npm_init = Command::new("npm");
+        npm_init.arg("init").arg("-y");
+        commands.push(npm_init);
+
+        commands
+    }
+
     fn generate_npm_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        for module in self.config.get_npm_deps() {
-            let mut command = Command::new("npm");
-            command.arg("install");
+        if let Some(npm_modules) = self.config.get_npm_deps() {
+            for module in npm_modules {
+                let mut command = Command::new("npm");
+                command.arg("install");
 
-            if module.get_version() != "latest" {
-                command.arg(format!("{}@{}", module.get_name(), module.get_version()));
-            } else {
-                command.arg(module.get_name());
-            }
+                if module.get_version() != "latest" {
+                    command.arg(format!("{}@{}", module.get_name(), module.get_version()));
+                } else {
+                    command.arg(module.get_name());
+                }
 
-            if module.is_dev() {
-                command.arg("--save-dev");
-            }
+                if module.is_dev() {
+                    command.arg("--save-dev");
+                }
 
-            commands.push(command);
+                commands.push(command);
 
-            if let Some(mut cmds) = self.generate_then_cmds(module) {
-                commands.append(&mut cmds);
+                if let Some(mut cmds) = self.generate_then_cmds(module) {
+                    commands.append(&mut cmds);
+                }
             }
         }
 
@@ -90,53 +111,55 @@ impl ProjectBuilder {
 
     fn generate_cargo_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        for module in self.config.get_cargo_deps() {
-            let mut command = Command::new("cargo");
-            command.arg("add");
+        if let Some(cargo_modules) = self.config.get_cargo_deps() {
+            for module in cargo_modules {
+                let mut command = Command::new("cargo");
+                command.arg("add");
 
-            if module.get_version() != "latest" {
-                command.arg(format!("{}@{}", module.get_name(), module.get_version()));
-            } else {
-                command.arg(module.get_name());
-            }
+                if module.get_version() != "latest" {
+                    command.arg(format!("{}@{}", module.get_name(), module.get_version()));
+                } else {
+                    command.arg(module.get_name());
+                }
 
-            if module.is_dev() {
-                command.arg("--dev");
-            }
+                if module.is_dev() {
+                    command.arg("--dev");
+                }
 
-            commands.push(command);
+                commands.push(command);
 
-            if let Some(mut cmds) = self.generate_then_cmds(module) {
-                commands.append(&mut cmds);
+                if let Some(mut cmds) = self.generate_then_cmds(module) {
+                    commands.append(&mut cmds);
+                }
             }
         }
-
         commands
     }
 
     fn generate_composer_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        for module in self.config.get_composer_deps() {
-            let mut command = Command::new("composer");
-            command.arg("require");
+        if let Some(composer_modules) = self.config.get_composer_deps() {
+            for module in composer_modules {
+                let mut command = Command::new("composer");
+                command.arg("require");
 
-            if module.get_version() != "latest" {
-                command.arg(format!("{}@{}", module.get_name(), module.get_version()));
-            } else {
-                command.arg(module.get_name());
-            }
+                if module.get_version() != "latest" {
+                    command.arg(format!("{}@{}", module.get_name(), module.get_version()));
+                } else {
+                    command.arg(module.get_name());
+                }
 
-            if module.is_dev() {
-                command.arg("--dev");
-            }
+                if module.is_dev() {
+                    command.arg("--dev");
+                }
 
-            commands.push(command);
+                commands.push(command);
 
-            if let Some(mut cmds) = self.generate_then_cmds(module) {
-                commands.append(&mut cmds);
+                if let Some(mut cmds) = self.generate_then_cmds(module) {
+                    commands.append(&mut cmds);
+                }
             }
         }
-
         commands
     }
 

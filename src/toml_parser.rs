@@ -15,7 +15,7 @@ pub struct TomlTemplate {
     dependencies: Dependencies,
 }
 
-type Dependencies = HashMap<String, Vec<Module>>;
+type Dependencies = HashMap<String, Option<Vec<Module>>>;
 type Scripts = HashMap<String, HashMap<String, String>>;
 
 #[allow(unused)]
@@ -69,15 +69,15 @@ impl TomlTemplate {
     fn fetch_deps(keys: Vec<&str>, deps: &Table) -> Dependencies {
         let mut results = HashMap::new();
         keys.iter().for_each(|key| {
-            let packages: Vec<_> = match deps.get(*key) {
+            let packages = match deps.get(*key) {
                 Some(entries) => {
                     let entries = entries
                         .as_array()
                         .expect(format!("Error retrieving {} dependencies", key).as_str());
                     println!("Collecting {} dependencies", key);
-                    Self::format_deps(entries)
+                    Some(Self::format_deps(entries))
                 }
-                None => Vec::new(),
+                None => None,
             };
             results.insert(key.to_string(), packages);
         });
@@ -256,7 +256,7 @@ pub mod tests {
         let parsed_deps = TomlTemplate::fetch_deps(vec!["npm"], &deps_table);
         assert!(parsed_deps.contains_key("npm"));
 
-        let npm_deps = &parsed_deps["npm"];
+        let npm_deps = &parsed_deps["npm"].as_ref().unwrap();
         assert!(npm_deps
             .iter()
             .any(|dep| dep.get_name() == "test_npm_dep_min"));
@@ -287,7 +287,7 @@ pub mod tests {
         let parsed_deps = TomlTemplate::fetch_deps(vec!["cargo"], &deps_table);
         assert!(parsed_deps.contains_key("cargo"));
 
-        let cargo_deps = &parsed_deps["cargo"];
+        let cargo_deps = &parsed_deps["cargo"].as_ref().unwrap();
         assert!(cargo_deps
             .iter()
             .any(|dep| dep.get_name() == "test_cargo_dep_min"));
@@ -318,7 +318,7 @@ pub mod tests {
         let parsed_deps = TomlTemplate::fetch_deps(vec!["composer"], &deps_table);
         assert!(parsed_deps.contains_key("composer"));
 
-        let composer_deps = &parsed_deps["composer"];
+        let composer_deps = &parsed_deps["composer"].as_ref().unwrap();
         assert!(composer_deps
             .iter()
             .any(|dep| dep.get_name() == "test_composer_dep_min"));
