@@ -1,6 +1,7 @@
 // TODO: break this up into multiple modules (database, web_framework, etc.) and then have a config module that imports them all and builds the config object
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use std::{
+    collections::HashMap,
     error::Error,
     path::{Path, PathBuf},
     str::FromStr,
@@ -10,7 +11,11 @@ use std::{
 use slug::slugify;
 use strum::{EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
 
-use crate::{module::Module, toml_parser::TomlTemplate, StackTemplate};
+use crate::{
+    module::Module,
+    toml_parser::{PackageScripts, TomlTemplate},
+    StackTemplate,
+};
 
 type NpmDeps = Vec<Module>;
 type CargoDeps = Vec<Module>;
@@ -28,6 +33,9 @@ pub struct ScaffoldConfig {
     cms: Option<CMS>,
     linters: Vec<Linter>,
     formatters: Vec<Formatter>,
+    npm_scripts: Option<PackageScripts>,
+    composer_scripts: Option<PackageScripts>,
+    cargo_scripts: Option<PackageScripts>,
     npm_deps: Option<NpmDeps>,
     composer_deps: Option<ComposerDeps>,
     cargo_deps: Option<CargoDeps>,
@@ -38,6 +46,10 @@ impl ScaffoldConfig {
     pub fn new(options: UserOptions) -> Self {
         let toml = TomlTemplate::new(&options.stack.get_path());
         let dependencies = toml.get_dependencies();
+        let scripts = match toml.get_scripts() {
+            Some(scripts) => scripts.to_owned(),
+            None => HashMap::new(),
+        };
 
         //TODO: refactor out base/common properties
         match options.stack {
@@ -52,6 +64,9 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
+                npm_scripts: scripts.get("npm").cloned(),
+                composer_scripts: scripts.get("composer").cloned(),
+                cargo_scripts: scripts.get("cargo").cloned(),
                 npm_deps: dependencies.get("npm").unwrap_or(&None).clone(),
                 composer_deps: dependencies.get("composer").unwrap().clone(),
                 cargo_deps: dependencies.get("cargo").unwrap().clone(),
@@ -68,6 +83,9 @@ impl ScaffoldConfig {
                 cms: None,
                 linters: vec![],
                 formatters: vec![],
+                npm_scripts: scripts.get("npm").cloned(),
+                composer_scripts: scripts.get("composer").cloned(),
+                cargo_scripts: scripts.get("cargo").cloned(),
                 npm_deps: dependencies.get("npm").unwrap().clone(),
                 composer_deps: dependencies.get("composer").unwrap().clone(),
                 cargo_deps: dependencies.get("cargo").unwrap().clone(),
@@ -94,6 +112,18 @@ impl ScaffoldConfig {
 
     pub fn get_composer_deps(&self) -> &Option<ComposerDeps> {
         &self.composer_deps
+    }
+
+    pub fn get_npm_scripts(&self) -> &Option<PackageScripts> {
+        &self.npm_scripts
+    }
+
+    pub fn get_cargo_scripts(&self) -> &Option<PackageScripts> {
+        &self.cargo_scripts
+    }
+
+    pub fn get_composer_scripts(&self) -> &Option<PackageScripts> {
+        &self.composer_scripts
     }
 }
 

@@ -16,7 +16,8 @@ pub struct TomlTemplate {
 }
 
 type Dependencies = HashMap<String, Option<Vec<Module>>>;
-type Scripts = HashMap<String, HashMap<String, String>>;
+pub type PackageScripts = HashMap<String, String>;
+type Scripts = HashMap<String, PackageScripts>;
 
 #[allow(unused)]
 impl TomlTemplate {

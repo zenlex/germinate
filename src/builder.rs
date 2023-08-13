@@ -36,7 +36,14 @@ impl ProjectBuilder {
             println!("->> STDERR: {}", String::from_utf8_lossy(&output.stderr));
         }
 
-        //TODO:  (build templates / set scripts / update manifests / containerize as needed)
+        // set scripts
+        self.set_npm_scripts();
+        self.set_composer_scripts();
+
+        //TODO? Can set custom cargo scripts or makefiles if needed down the road
+        // self.set_cargo_scripts();
+
+        //TODO:  (build templates / update manifests / containerize as needed)
         // TODO: improve logging during build
         // copy templates over to project
     }
@@ -74,9 +81,17 @@ impl ProjectBuilder {
 
     fn generate_init_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        let mut npm_init = Command::new("npm");
-        npm_init.arg("init").arg("-y");
-        commands.push(npm_init);
+        if self.config.get_npm_deps().is_some() {
+            let mut npm_init = Command::new("npm");
+            npm_init.arg("init").arg("-y");
+            commands.push(npm_init);
+        }
+        if self.config.get_composer_deps().is_some() {
+            //TODO: make non-interactive by passing --no-interaction + basic data flags
+            let mut composer_init = Command::new("composer");
+            composer_init.arg("init");
+            commands.push(composer_init);
+        }
 
         commands
     }
@@ -177,6 +192,40 @@ impl ProjectBuilder {
                 Some(commands)
             }
             None => None,
+        }
+    }
+
+    fn set_npm_scripts(&self) {
+        if let Some(npm_scripts) = self.config.get_npm_scripts() {
+            println!("Setting NPM scripts...");
+            for (name, script) in npm_scripts {
+                let mut command = Command::new("npm");
+                command
+                    .arg("pkg")
+                    .arg("set")
+                    .arg(format!("scripts.{}={}", name, script));
+                println!("Running command: {:?}", command);
+                let output = command.output().expect("Failed to execute command");
+                println!("->> STDOUT: {}", String::from_utf8_lossy(&output.stdout));
+                println!("->> STDERR: {}", String::from_utf8_lossy(&output.stderr));
+            }
+        }
+    }
+
+    fn set_composer_scripts(&self) {
+        if let Some(composer_scripts) = self.config.get_composer_scripts() {
+            println!("Setting Composer scripts...");
+            for (name, script) in composer_scripts {
+                let mut command = Command::new("composer");
+                command
+                    .arg("config --")
+                    .arg(format!("scripts.{}", name))
+                    .arg(script);
+                println!("Running command: {:?}", command);
+                let output = command.output().expect("Failed to execute command");
+                println!("->> STDOUT: {}", String::from_utf8_lossy(&output.stdout));
+                println!("->> STDERR: {}", String::from_utf8_lossy(&output.stderr));
+            }
         }
     }
 }
