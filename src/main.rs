@@ -1,6 +1,7 @@
 mod builder;
 #[allow(warnings)]
 mod config;
+mod dialogue;
 mod module;
 mod toml_parser;
 
@@ -50,23 +51,10 @@ pub struct ScaffoldArgs {
     output_dir: Option<PathBuf>,
 }
 fn main() {
-    // TODO: parse command line args (need to make them optional in a logical way and decide on precedence)
-    let args = ScaffoldArgs::parse();
-    println!("{:?}", args);
-
-    // get user options
-    let user_config = config::get_user_config().unwrap();
-
-    // create config
+    let user_config = dialogue::get_user_config().unwrap();
     let app_config = ScaffoldConfig::new(user_config);
-    // println!("->> APP_CONFIG: ");
-    // dbg!(&app_config);
-
     let builder = ProjectBuilder::new(app_config);
     builder.build();
-    // run scaffolding engine
-    //? Create a Builder for the App Config, and then we may also need sub builders for depencies and such
-    //? Builder should parse the toml file for the stack to populate the config and then: create folders, install dependencies, template dockerfile, build docker image, create commit and push to git repo
     //?  Can we parallelize it? (future optimization, but keep thinks modularized with a mind towards this end)
 
     // return success/errors

@@ -9,26 +9,19 @@ pub struct ProjectBuilder {
     config: ScaffoldConfig,
 }
 
-#[allow(unused)]
 impl ProjectBuilder {
     pub fn new(config: ScaffoldConfig) -> Self {
         Self { config }
     }
 
-    pub fn get_config(&self) -> &ScaffoldConfig {
-        &self.config
-    }
-
     pub fn build(&self) {
         println!("Building project...");
-        // create project folders
         self.make_folders();
-        // generate install commands
-        let commands = self.get_install_commands();
-
-        // run install commands
         std::env::set_current_dir(self.config.get_root_dir())
             .expect("Failed to set current directory");
+
+        let commands = self.get_install_commands();
+
         for mut command in commands {
             println!("Running command: {:?}", command);
             let output = command.output().expect("Failed to execute command");
@@ -36,10 +29,8 @@ impl ProjectBuilder {
             println!("->> STDERR: {}", String::from_utf8_lossy(&output.stderr));
         }
 
-        // set scripts
         self.set_npm_scripts();
         self.set_composer_scripts();
-
         //TODO? Can set custom cargo scripts or makefiles if needed down the road
         // self.set_cargo_scripts();
 

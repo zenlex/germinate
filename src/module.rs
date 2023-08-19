@@ -1,10 +1,4 @@
-//TODO: create PackageManager trait with parse_deps, install_deps and generate_commands behaviors - might be able to just impl the toml deserializer trait for the ParseDeps part?)
-//TODO: Create a struct for each package manager that implements the PackageManager trait and an Enum that holds those structs
-// TODO: Create a builder struct that runs the package manager install command for each package manager (CargoBuilder, NpmBuilder, ComposerBuilder, etc)
-// TODO: Create a projectBuilder struct that creates the folders, runs the package manager builders, runs the docker builder, db builder, etc.
-//TODO: extract npm specific stuff to npm module and add composer and cargo modules
 #[derive(Debug, Clone)]
-#[allow(unused)]
 pub struct Module {
     name: String,
     version: String,
@@ -14,7 +8,6 @@ pub struct Module {
 
 type ThenCommands = Vec<Vec<String>>;
 
-#[allow(unused)]
 impl Module {
     pub fn new(name: String, version: String, dev: bool, then: Option<ThenCommands>) -> Self {
         Self {

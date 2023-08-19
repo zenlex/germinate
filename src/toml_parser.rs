@@ -4,22 +4,19 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use crate::config::PackageScripts;
 use crate::module::Module;
 use toml::{map::Map, Table, Value};
-#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct TomlTemplate {
-    title: String,
     subfolders: Option<Vec<PathBuf>>,
     scripts: Option<Scripts>,
     dependencies: Dependencies,
 }
 
 type Dependencies = HashMap<String, Option<Vec<Module>>>;
-pub type PackageScripts = HashMap<String, String>;
 type Scripts = HashMap<String, PackageScripts>;
 
-#[allow(unused)]
 impl TomlTemplate {
     pub fn new(path: &Path) -> Self {
         let table = Self::get_table(path);
@@ -32,15 +29,10 @@ impl TomlTemplate {
         let dependencies = Self::parse_deps(&table);
 
         Self {
-            title: title.to_string(),
             subfolders,
             scripts,
             dependencies,
         }
-    }
-
-    pub fn get_title(&self) -> &str {
-        &self.title
     }
 
     pub fn get_subfolders(&self) -> Option<&Vec<PathBuf>> {
