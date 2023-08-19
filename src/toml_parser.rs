@@ -20,10 +20,6 @@ type Scripts = HashMap<String, PackageScripts>;
 impl TomlTemplate {
     pub fn new(path: &Path) -> Self {
         let table = Self::get_table(path);
-        let title = match table.get("title") {
-            Some(title) => title.as_str().expect("Error parsing title"),
-            None => panic!("No title key in table"),
-        };
         let subfolders = Self::parse_subfolders(&table);
         let scripts = Self::parse_scripts(&table);
         let dependencies = Self::parse_deps(&table);
