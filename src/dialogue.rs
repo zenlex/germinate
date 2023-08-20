@@ -81,6 +81,7 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
 pub enum Database {
     Postgres,
     Mongo,
+    Sqlite,
 }
 
 #[derive(Debug, Clone, EnumVariantNames, EnumString)]

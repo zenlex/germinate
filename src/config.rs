@@ -43,10 +43,13 @@ enum Language {
 
 #[derive(Debug, Clone)]
 enum DbClient {
-    Diesel, // Rust ORM
-    Sqlx,   // Rust typed SQL
-    Prisma, // TS ORM
-    Slonik, // TS typed SQL
+    Diesel,       // Rust ORM
+    Sqlx,         // Rust typed SQL
+    Prisma,       // TS ORM
+    Slonik,       // TS typed SQL
+    BetterSqlite, // Node SQLite3 driver
+    MongoDb,      // Node/Rust/PHP MongoDB driver
+    Mongoose,     // Node MongoDB ORM
 }
 
 #[allow(unused)]
@@ -105,7 +108,28 @@ impl ScaffoldConfig {
                         false => Some(DbClient::Slonik),
                     },
                 },
-                _ => None,
+                Database::Sqlite => match options.stack {
+                    StackTemplate::Laravel => None,
+                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
+                        true => Some(DbClient::Diesel),
+                        false => Some(DbClient::Sqlx),
+                    },
+                    _ => match options.orm {
+                        true => Some(DbClient::Prisma),
+                        false => Some(DbClient::BetterSqlite),
+                    },
+                },
+                Database::Mongo => match options.stack {
+                    StackTemplate::Laravel => Some(DbClient::MongoDb),
+                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
+                        true => panic!("No Rust ORM for MongoDB"),
+                        false => Some(DbClient::MongoDb),
+                    },
+                    _ => match options.orm {
+                        true => Some(DbClient::Mongoose),
+                        false => Some(DbClient::MongoDb),
+                    },
+                },
             },
             None => None,
         };
