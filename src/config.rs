@@ -1,20 +1,10 @@
-use dialoguer::{theme::ColorfulTheme, Input, MultiSelect, Select};
-use std::{
-    collections::HashMap,
-    error::Error,
-    path::{Path, PathBuf},
-    str::FromStr,
-    vec,
-};
-
-use slug::slugify;
-use strum::{EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
+use std::{collections::HashMap, path::PathBuf, vec};
 
 use crate::{
+    dialogue::StackTemplate,
     dialogue::{Database, TestFramework, UserOptions},
     module::Module,
     toml_parser::TomlTemplate,
-    StackTemplate,
 };
 
 type NpmDeps = Vec<Module>;
@@ -27,12 +17,12 @@ enum Linter {
     ESLint,
     PHPStan,
     Stylelint,
+    Clippy,
 }
 
 #[derive(Debug, Clone)]
 enum Formatter {
     ESLint,
-    PhpCsFixer,
     Pint,
     Rustfmt,
 }
@@ -52,16 +42,6 @@ enum Language {
 }
 
 #[derive(Debug, Clone)]
-enum WebFramework {
-    Axum,
-    Express,
-    Astro,
-    Laravel,
-    Vue,
-    Dioxus,
-}
-
-#[derive(Debug, Clone)]
 enum DbClient {
     Diesel, // Rust ORM
     Sqlx,   // Rust typed SQL
@@ -69,6 +49,7 @@ enum DbClient {
     Slonik, // TS typed SQL
 }
 
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct ScaffoldConfig {
     title: String,
@@ -114,11 +95,15 @@ impl ScaffoldConfig {
         let db_client = match &db {
             Some(db_platform) => match db_platform {
                 Database::Postgres => match options.stack {
-                    StackTemplate::SSRJS => match options.orm {
+                    StackTemplate::Laravel => None,
+                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
+                        true => Some(DbClient::Diesel),
+                        false => Some(DbClient::Sqlx),
+                    },
+                    _ => match options.orm {
                         true => Some(DbClient::Prisma),
                         false => Some(DbClient::Slonik),
                     },
-                    _ => None,
                 },
                 _ => None,
             },
@@ -130,7 +115,7 @@ impl ScaffoldConfig {
                 vec![Language::PHP, Language::TypeScript, Language::JavaScript]
             }
             StackTemplate::RSAPI => vec![Language::Rust],
-            StackTemplate::RSAPI => vec![Language::Rust],
+            StackTemplate::RSCLI => vec![Language::Rust],
             _ => vec![Language::TypeScript, Language::JavaScript],
         };
 
@@ -145,19 +130,15 @@ impl ScaffoldConfig {
         };
 
         let linters = match options.stack {
-            StackTemplate::SSRJS => vec![Linter::ESLint],
-            StackTemplate::SPAJS => vec![Linter::ESLint],
-            StackTemplate::Laravel => vec![Linter::ESLint, Linter::Stylelint],
-            StackTemplate::TSAPI => vec![Linter::ESLint],
-            _ => vec![],
+            StackTemplate::Laravel => vec![Linter::ESLint, Linter::Stylelint, Linter::PHPStan],
+            StackTemplate::RSAPI | StackTemplate::RSCLI => vec![Linter::Clippy],
+            _ => vec![Linter::ESLint],
         };
 
         let formatters = match options.stack {
-            StackTemplate::SSRJS => vec![Formatter::ESLint],
-            StackTemplate::SPAJS => vec![Formatter::ESLint],
             StackTemplate::Laravel => vec![Formatter::ESLint, Formatter::Pint],
-            StackTemplate::TSAPI => vec![Formatter::ESLint],
-            _ => vec![],
+            StackTemplate::RSAPI | StackTemplate::RSCLI => vec![Formatter::Rustfmt],
+            _ => vec![Formatter::ESLint],
         };
 
         Self {
@@ -204,9 +185,10 @@ impl ScaffoldConfig {
         &self.npm_scripts
     }
 
-    pub fn get_cargo_scripts(&self) -> &Option<PackageScripts> {
-        &self.cargo_scripts
-    }
+    // TODO? May need this later for custom build scripts
+    // pub fn get_cargo_scripts(&self) -> &Option<PackageScripts> {
+    //     &self.cargo_scripts
+    // }
 
     pub fn get_composer_scripts(&self) -> &Option<PackageScripts> {
         &self.composer_scripts

@@ -5,10 +5,39 @@ use std::{
 
 use dialoguer::{theme::ColorfulTheme, Input, MultiSelect, Select};
 use slug::slugify;
-use strum::{EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
+use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
 
-use crate::StackTemplate;
+#[derive(Debug, Clone, EnumVariantNames, EnumString, EnumIter, EnumProperty)]
+pub enum StackTemplate {
+    #[strum(props(Label = "SSR JavaScript/TypeScript"))]
+    SSRJS,
+    #[strum(props(Label = "SPA JavaScript/TypeScript"))]
+    SPAJS,
+    #[strum(props(Label = "Laravel with Vue + Inertia"))]
+    Laravel,
+    #[strum(props(Label = "TypeScript CLI Tool"))]
+    TSCLI,
+    #[strum(props(Label = "Rust CLI Tool"))]
+    RSCLI,
+    #[strum(props(Label = "TypeScript API (backend only)"))]
+    TSAPI,
+    #[strum(props(Label = "Rust API (backend only)"))]
+    RSAPI,
+}
 
+impl StackTemplate {
+    pub fn get_path(&self) -> PathBuf {
+        match self {
+            Self::SSRJS => PathBuf::from("templates/ssrjs/stack_template.toml"),
+            Self::SPAJS => PathBuf::from("templates/spajs/stack_template.toml"),
+            Self::Laravel => PathBuf::from("templates/laravel/stack_template.toml"),
+            Self::TSCLI => PathBuf::from("templates/tscli/stack_template.toml"),
+            Self::RSCLI => PathBuf::from("templates/rscli/stack_template.toml"),
+            Self::TSAPI => PathBuf::from("templates/tsapi/stack_template.toml"),
+            Self::RSAPI => PathBuf::from("templates/rsapi/stack_template.toml"),
+        }
+    }
+}
 #[derive(Debug)]
 pub struct UserOptions {
     pub stack: StackTemplate,

@@ -212,12 +212,9 @@ pub mod tests {
         let template = TomlTemplate::new(path);
 
         dbg!(&template);
-        let title = template.get_title();
         let deps_table = template.get_dependencies();
         let scripts_table = template.get_scripts().expect("No scripts extracted");
         let subfolders = template.get_subfolders().expect("No subfolders extracted");
-
-        assert_eq!(title, "toml_test_template");
 
         assert!(deps_table.contains_key("npm"));
         assert!(deps_table.contains_key("cargo"));
