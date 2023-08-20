@@ -7,15 +7,15 @@ use std::{
 use crate::config::PackageScripts;
 use crate::module::Module;
 use toml::{map::Map, Table, Value};
+
+type Dependencies = HashMap<String, Option<Vec<Module>>>;
+type Scripts = HashMap<String, PackageScripts>;
 #[derive(Debug, Clone)]
 pub struct TomlTemplate {
     subfolders: Option<Vec<PathBuf>>,
     scripts: Option<Scripts>,
     dependencies: Dependencies,
 }
-
-type Dependencies = HashMap<String, Option<Vec<Module>>>;
-type Scripts = HashMap<String, PackageScripts>;
 
 impl TomlTemplate {
     pub fn new(path: &Path) -> Self {
