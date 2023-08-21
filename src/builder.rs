@@ -76,6 +76,11 @@ impl ProjectBuilder {
 
     fn generate_init_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
+        if self.config.get_cargo_deps().is_some() {
+            let mut cargo_init = Command::new("cargo");
+            cargo_init.arg("init");
+            commands.push(cargo_init);
+        }
         if self.config.get_npm_deps().is_some() {
             let mut npm_init = Command::new("npm");
             npm_init.arg("init").arg("-y");
