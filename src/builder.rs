@@ -70,6 +70,11 @@ impl ProjectBuilder {
         commands.append(&mut self.generate_linter_cmds());
         println!("->> FORMATTERS: {:?}", self.config.get_formatters());
         commands.append(&mut self.generate_formatter_cmds());
+        println!(
+            "->> TEST FRAMEWORKS: {:?}",
+            self.config.get_test_frameworks()
+        );
+        commands.append(&mut self.generate_test_framework_cmds());
 
         commands
     }
@@ -246,6 +251,17 @@ impl ProjectBuilder {
         if formatters.len() > 0 {
             for formatter in formatters {
                 commands.append(&mut formatter.get_install_commands());
+            }
+        }
+        commands
+    }
+
+    fn generate_test_framework_cmds(&self) -> Vec<Command> {
+        let mut commands = vec![];
+        let test_frameworks = self.config.get_test_frameworks();
+        if test_frameworks.len() > 0 {
+            for test_framework in test_frameworks {
+                commands.append(&mut test_framework.get_install_commands());
             }
         }
         commands

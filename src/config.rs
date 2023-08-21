@@ -2,10 +2,11 @@ use std::{collections::HashMap, path::PathBuf, vec};
 
 use crate::{
     dialogue::StackTemplate,
-    dialogue::{Database, TestFramework, UserOptions},
+    dialogue::{Database, UserOptions},
     formatters::Formatter,
     linters::Linter,
     module::Module,
+    test_frameworks::TestFramework,
     toml_parser::TomlTemplate,
 };
 
@@ -211,5 +212,9 @@ impl ScaffoldConfig {
 
     pub fn get_formatters(&self) -> &Vec<Formatter> {
         &self.formatters
+    }
+
+    pub fn get_test_frameworks(&self) -> &Vec<TestFramework> {
+        &self.test_frameworks
     }
 }

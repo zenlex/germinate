@@ -4,6 +4,7 @@ mod dialogue;
 mod formatters;
 mod linters;
 mod module;
+mod test_frameworks;
 mod toml_parser;
 
 use crate::{builder::ProjectBuilder, config::ScaffoldConfig};

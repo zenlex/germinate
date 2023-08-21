@@ -3,6 +3,7 @@ use std::{
     str::FromStr,
 };
 
+use crate::test_frameworks::TestFramework;
 use dialoguer::{theme::ColorfulTheme, Input, MultiSelect, Select};
 use slug::slugify;
 use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
@@ -82,16 +83,6 @@ pub enum Database {
     Postgres,
     Mongo,
     Sqlite,
-}
-
-#[derive(Debug, Clone, EnumVariantNames, EnumString)]
-pub enum TestFramework {
-    Jest,
-    Vitest,
-    PHPUnit,
-    Pest,
-    Playwright,
-    Dusk,
 }
 
 fn get_app_name() -> String {
