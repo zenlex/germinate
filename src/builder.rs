@@ -68,6 +68,8 @@ impl ProjectBuilder {
         commands.append(&mut self.generate_composer_cmds());
         println!("->> LINTERS: {:?}", self.config.get_linters());
         commands.append(&mut self.generate_linter_cmds());
+        println!("->> FORMATTERS: {:?}", self.config.get_formatters());
+        commands.append(&mut self.generate_formatter_cmds());
 
         commands
     }
@@ -228,6 +230,17 @@ impl ProjectBuilder {
         if linters.len() > 0 {
             for linter in linters {
                 commands.append(&mut linter.get_install_commands());
+            }
+        }
+        commands
+    }
+
+    fn generate_formatter_cmds(&self) -> Vec<Command> {
+        let mut commands = vec![];
+        let formatters = self.config.get_formatters();
+        if formatters.len() > 0 {
+            for formatter in formatters {
+                commands.append(&mut formatter.get_install_commands());
             }
         }
         commands

@@ -3,6 +3,7 @@ use std::{collections::HashMap, path::PathBuf, vec};
 use crate::{
     dialogue::StackTemplate,
     dialogue::{Database, TestFramework, UserOptions},
+    formatters::Formatter,
     linters::Linter,
     module::Module,
     toml_parser::TomlTemplate,
@@ -12,13 +13,6 @@ type NpmDeps = Vec<Module>;
 type CargoDeps = Vec<Module>;
 type ComposerDeps = Vec<Module>;
 pub type PackageScripts = HashMap<String, String>;
-
-#[derive(Debug, Clone)]
-enum Formatter {
-    ESLint,
-    Pint,
-    Rustfmt,
-}
 
 #[derive(Debug, Clone)]
 enum CMS {
@@ -153,9 +147,9 @@ impl ScaffoldConfig {
         };
 
         let formatters = match options.stack {
-            StackTemplate::Laravel => vec![Formatter::ESLint, Formatter::Pint],
+            StackTemplate::Laravel => vec![Formatter::Pint],
             StackTemplate::RSAPI | StackTemplate::RSCLI => vec![Formatter::Rustfmt],
-            _ => vec![Formatter::ESLint],
+            _ => vec![],
         };
 
         Self {
@@ -213,5 +207,9 @@ impl ScaffoldConfig {
 
     pub fn get_linters(&self) -> &Vec<Linter> {
         &self.linters
+    }
+
+    pub fn get_formatters(&self) -> &Vec<Formatter> {
+        &self.formatters
     }
 }
