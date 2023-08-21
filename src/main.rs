@@ -1,6 +1,7 @@
 mod builder;
 mod config;
 mod dialogue;
+mod linters;
 mod module;
 mod toml_parser;
 

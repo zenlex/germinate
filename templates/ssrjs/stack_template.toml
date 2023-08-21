@@ -21,11 +21,25 @@ components = {}
 [[deps.npm]]
 name = "astro"
 dev = true
-version = "latest"
-then=[]
 
 [[deps.npm]]
 name = "@astrojs/vue"
 
 [[deps.npm]]
 name= "vue"
+
+[[deps.npm]]
+name = "eslint-plugin-astro"
+dev = true
+
+[[deps.npm]]
+name = "eslint-plugin-vue"
+dev = true
+
+[[deps.npm]]
+name = "@typescript-eslint/parser"
+dev = true
+
+[[deps.npm]]
+name = "eslint-plugin-jsx-a11y"
+dev= true

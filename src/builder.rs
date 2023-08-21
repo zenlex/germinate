@@ -66,6 +66,8 @@ impl ProjectBuilder {
         commands.append(&mut self.generate_cargo_cmds());
         println!("->> COMPOSER: {:?}", self.config.get_composer_deps());
         commands.append(&mut self.generate_composer_cmds());
+        println!("->> LINTERS: {:?}", self.config.get_linters());
+        commands.append(&mut self.generate_linter_cmds());
 
         commands
     }
@@ -218,6 +220,17 @@ impl ProjectBuilder {
                 println!("->> STDERR: {}", String::from_utf8_lossy(&output.stderr));
             }
         }
+    }
+
+    fn generate_linter_cmds(&self) -> Vec<Command> {
+        let mut commands = vec![];
+        let linters = self.config.get_linters();
+        if linters.len() > 0 {
+            for linter in linters {
+                commands.append(&mut linter.get_install_commands());
+            }
+        }
+        commands
     }
 }
 
