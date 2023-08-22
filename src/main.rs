@@ -1,5 +1,6 @@
 mod builder;
 mod config;
+mod db_client;
 mod dialogue;
 mod formatters;
 mod linters;

@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, vec};
 
 use crate::{
+    db_client::DbClient,
     dialogue::StackTemplate,
     dialogue::{Database, UserOptions},
     formatters::Formatter,
@@ -27,17 +28,6 @@ enum Language {
     JavaScript,
     TypeScript,
     PHP,
-}
-
-#[derive(Debug, Clone)]
-enum DbClient {
-    Diesel,       // Rust ORM
-    Sqlx,         // Rust typed SQL
-    Prisma,       // TS ORM
-    Slonik,       // TS typed SQL
-    BetterSqlite, // Node SQLite3 driver
-    MongoDb,      // Node/Rust/PHP MongoDB driver
-    Mongoose,     // Node MongoDB ORM
 }
 
 #[allow(unused)]
