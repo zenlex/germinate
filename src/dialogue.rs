@@ -48,6 +48,7 @@ pub struct UserOptions {
     pub orm: bool,
     pub cms: bool,
     pub test_frameworks: Vec<TestFramework>,
+    pub containers: bool,
 }
 
 pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
@@ -62,6 +63,7 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
 
     let cms = get_cms();
     let test_frameworks = test_frameworks_prompt();
+    let containers = containers_prompt();
 
     let user_config = UserOptions {
         app_name,
@@ -71,6 +73,7 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         orm,
         cms,
         test_frameworks,
+        containers,
     };
 
     println!("->> User Config generated: {:?}", user_config);
@@ -167,4 +170,13 @@ fn test_frameworks_prompt() -> Vec<TestFramework> {
     }
 
     results
+}
+
+fn containers_prompt() -> bool {
+    Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Would you like to use Docker containers?")
+        .items(&["Yes", "No"])
+        .interact()
+        .expect("Failed to get containers selection from user")
+        == 0
 }

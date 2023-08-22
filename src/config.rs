@@ -59,6 +59,7 @@ pub struct ScaffoldConfig {
     composer_deps: Option<ComposerDeps>,
     cargo_deps: Option<CargoDeps>,
     subfolders: Option<Vec<PathBuf>>,
+    containers: bool,
 }
 
 impl ScaffoldConfig {
@@ -170,6 +171,7 @@ impl ScaffoldConfig {
             composer_deps,
             cargo_deps,
             subfolders,
+            containers: options.containers,
         }
     }
 
