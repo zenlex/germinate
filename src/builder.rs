@@ -134,6 +134,7 @@ impl ProjectBuilder {
         if let Some(cargo_modules) = self.config.get_cargo_deps() {
             for module in cargo_modules {
                 let mut command = Command::new("cargo");
+                command.env("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
                 command.arg("add");
 
                 if module.get_version() != "latest" {

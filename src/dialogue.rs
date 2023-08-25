@@ -61,7 +61,11 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         None => false,
     };
 
-    let cms = get_cms();
+    let cms = match stack {
+        StackTemplate::RSCLI | StackTemplate::TSCLI => false,
+        _ => get_cms(),
+    };
+
     let test_frameworks = test_frameworks_prompt();
     let containers = containers_prompt();
 

@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    env::current_exe,
     fs,
     path::{Path, PathBuf},
 };
@@ -44,6 +45,7 @@ impl TomlTemplate {
     }
 
     fn parse_deps(table: &Table) -> Dependencies {
+        dbg!(table);
         let deps = match table.get("deps") {
             Some(deps) => deps.as_table().expect("Error parsing dependencies"),
             None => panic!("No deps keys found in TOML template file"),
@@ -192,8 +194,15 @@ impl TomlTemplate {
         paths
     }
 
+    //TODO? this requires templates folder to live in the same directory as the binary, could add a config/cli flag
     fn get_table(path: &Path) -> Table {
-        let template_str = fs::read_to_string(path).expect("Error reading file");
+        let template_path = current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .to_path_buf()
+            .join(path);
+        let template_str = fs::read_to_string(template_path).expect("Error reading file");
         let table = template_str.parse::<Table>().expect("Error parsing toml");
         table
     }
