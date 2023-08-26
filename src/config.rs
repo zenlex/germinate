@@ -22,8 +22,8 @@ enum CMS {
     Strapi,
 }
 
-#[derive(Debug, Clone)]
-enum Language {
+#[derive(Debug, Clone, PartialEq)]
+pub enum Language {
     Rust,
     JavaScript,
     TypeScript,
@@ -208,5 +208,17 @@ impl ScaffoldConfig {
 
     pub fn get_test_frameworks(&self) -> &Vec<TestFramework> {
         &self.test_frameworks
+    }
+
+    pub fn get_database(&self) -> &Option<Database> {
+        &self.db
+    }
+
+    pub fn get_db_client(&self) -> &Option<DbClient> {
+        &self.db_client
+    }
+
+    pub fn has_language(&self, language: &Language) -> bool {
+        self.languages.contains(language)
     }
 }

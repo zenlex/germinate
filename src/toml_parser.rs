@@ -45,7 +45,6 @@ impl TomlTemplate {
     }
 
     fn parse_deps(table: &Table) -> Dependencies {
-        dbg!(table);
         let deps = match table.get("deps") {
             Some(deps) => deps.as_table().expect("Error parsing dependencies"),
             None => panic!("No deps keys found in TOML template file"),

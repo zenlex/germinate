@@ -75,6 +75,8 @@ impl ProjectBuilder {
             self.config.get_test_frameworks()
         );
         commands.append(&mut self.generate_test_framework_cmds());
+        println!("->> DATABASE_CLIENT: {:?}", self.config.get_database());
+        commands.append(&mut self.generate_db_client_cmds());
 
         commands
     }
@@ -269,6 +271,14 @@ impl ProjectBuilder {
             for test_framework in test_frameworks {
                 commands.append(&mut test_framework.get_install_commands());
             }
+        }
+        commands
+    }
+
+    fn generate_db_client_cmds(&self) -> Vec<Command> {
+        let mut commands = vec![];
+        if let Some(db_client) = self.config.get_db_client() {
+            commands.append(&mut db_client.get_install_commands(&self.config));
         }
         commands
     }
