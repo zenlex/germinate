@@ -114,7 +114,21 @@ impl TomlTemplate {
                     }
                     None => None,
                 };
-                Module::new(name.to_string(), version.to_string(), dev, then)
+
+                let features = match dep.get("features") {
+                    Some(features) => Some(
+                        features
+                            .as_array()
+                            .expect("Error parsing dev")
+                            .iter()
+                            .map(|feature| {
+                                feature.as_str().expect("Error parsing feature").to_string()
+                            })
+                            .collect(),
+                    ),
+                    None => None,
+                };
+                Module::new(name.to_string(), version.to_string(), dev, then, features)
             })
             .collect()
     }

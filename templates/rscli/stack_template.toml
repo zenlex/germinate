@@ -1,2 +1,27 @@
+# General Config
+title = "rscli"
+description = "Rust CLI Tool"
+
 [[deps.cargo]]
 name = "dialoguer"
+
+[[deps.cargo]]
+name = "clap"
+features = ["derive"]
+
+[[deps.cargo]]
+name = "console"
+
+[[deps.cargo]]
+name = "indicatif"
+
+[[deps.cargo]]
+name = "strum"
+features = ["derive", "strum_macros"]
+
+[[deps.cargo]]
+name = "serde"
+
+[[deps.cargo]]
+name = "ratatui"
+features = ["all-widgets"]

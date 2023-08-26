@@ -147,6 +147,11 @@ impl ProjectBuilder {
                     command.arg("--dev");
                 }
 
+                if let Some(features) = module.get_features() {
+                    command.arg("--features");
+                    command.arg(features.join(","));
+                }
+
                 commands.push(command);
 
                 if let Some(mut cmds) = self.generate_then_cmds(module) {
