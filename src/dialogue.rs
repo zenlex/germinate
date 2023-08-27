@@ -14,6 +14,8 @@ pub enum StackTemplate {
     TSWEB,
     #[strum(props(Label = "Laravel with Vue + Inertia"))]
     Laravel,
+    #[strum(props(Label = "Rust Fullstack Web"))]
+    RSWEB,
     #[strum(props(Label = "TypeScript API (backend only)"))]
     TSAPI,
     #[strum(props(Label = "Rust API (backend only)"))]
@@ -29,6 +31,7 @@ impl StackTemplate {
         match self {
             Self::TSWEB => PathBuf::from("templates/tsweb/stack_template.toml"),
             Self::Laravel => PathBuf::from("templates/laravel/stack_template.toml"),
+            Self::RSWEB => PathBuf::from("templates/rsweb/stack_template.toml"),
             Self::TSCLI => PathBuf::from("templates/tscli/stack_template.toml"),
             Self::RSCLI => PathBuf::from("templates/rscli/stack_template.toml"),
             Self::TSAPI => PathBuf::from("templates/tsapi/stack_template.toml"),

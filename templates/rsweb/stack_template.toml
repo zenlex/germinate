@@ -1,0 +1,12 @@
+# General Config
+title = "rsweb"
+description = "Fullstack Rust Web App"
+
+[[deps.cargo]]
+name = "dioxus"
+
+[[deps.cargo]]
+name = "dioxus-fullstack"
+
+[[deps.cargo]]
+name = "axum"
