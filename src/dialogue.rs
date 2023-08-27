@@ -11,26 +11,23 @@ use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterat
 #[derive(Debug, Clone, EnumVariantNames, EnumString, EnumIter, EnumProperty)]
 pub enum StackTemplate {
     #[strum(props(Label = "SSR JavaScript/TypeScript"))]
-    SSRJS,
-    #[strum(props(Label = "SPA JavaScript/TypeScript"))]
-    SPAJS,
+    TSWEB,
     #[strum(props(Label = "Laravel with Vue + Inertia"))]
     Laravel,
-    #[strum(props(Label = "TypeScript CLI Tool"))]
-    TSCLI,
-    #[strum(props(Label = "Rust CLI Tool"))]
-    RSCLI,
     #[strum(props(Label = "TypeScript API (backend only)"))]
     TSAPI,
     #[strum(props(Label = "Rust API (backend only)"))]
     RSAPI,
+    #[strum(props(Label = "Rust CLI Tool"))]
+    RSCLI,
+    #[strum(props(Label = "TypeScript CLI Tool"))]
+    TSCLI,
 }
 
 impl StackTemplate {
     pub fn get_path(&self) -> PathBuf {
         match self {
-            Self::SSRJS => PathBuf::from("templates/ssrjs/stack_template.toml"),
-            Self::SPAJS => PathBuf::from("templates/spajs/stack_template.toml"),
+            Self::TSWEB => PathBuf::from("templates/tsweb/stack_template.toml"),
             Self::Laravel => PathBuf::from("templates/laravel/stack_template.toml"),
             Self::TSCLI => PathBuf::from("templates/tscli/stack_template.toml"),
             Self::RSCLI => PathBuf::from("templates/rscli/stack_template.toml"),
@@ -52,9 +49,9 @@ pub struct UserOptions {
 }
 
 pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
+    let stack = get_stack();
     let app_name = get_app_name();
     let output_dir = slugify(&app_name);
-    let stack = get_stack();
     let db = get_db();
     let orm = match &db {
         Some(_) => get_orm(),
