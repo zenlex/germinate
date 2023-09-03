@@ -31,6 +31,8 @@ impl ProjectBuilder {
 
         self.set_npm_scripts();
         self.set_composer_scripts();
+
+        self.post_install_commands();
         //TODO? Can set custom cargo scripts or makefiles if needed down the road
         // self.set_cargo_scripts();
 
@@ -281,6 +283,13 @@ impl ProjectBuilder {
             commands.append(&mut db_client.get_install_commands(&self.config));
         }
         commands
+    }
+
+    fn post_install_commands(&self) {
+        println!("Running post-install commands...");
+        match self.config.get_stack() {
+            _ => {}
+        }
     }
 }
 

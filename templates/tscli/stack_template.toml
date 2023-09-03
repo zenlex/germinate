@@ -1,0 +1,7 @@
+# General Config
+title = "tscli"
+description = "TypeScript Node CLI Tool"
+
+[[deps.npm]]
+name="typescript"
+dev="true"

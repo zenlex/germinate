@@ -39,7 +39,7 @@ impl StackTemplate {
         }
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UserOptions {
     pub stack: StackTemplate,
     pub output_dir: PathBuf,

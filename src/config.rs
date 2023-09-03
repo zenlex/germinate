@@ -33,6 +33,7 @@ pub enum Language {
 #[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct ScaffoldConfig {
+    user_options: UserOptions,
     title: String,
     root_dir: PathBuf,
     languages: Vec<Language>,
@@ -134,8 +135,11 @@ impl ScaffoldConfig {
 
         let linters = match options.stack {
             StackTemplate::Laravel => vec![Linter::ESLint, Linter::Stylelint, Linter::Larastan],
-            StackTemplate::RSAPI | StackTemplate::RSCLI => vec![Linter::Clippy],
-            _ => vec![Linter::ESLint, Linter::Stylelint],
+            StackTemplate::TSWEB => vec![Linter::ESLint, Linter::Stylelint],
+            StackTemplate::TSAPI | StackTemplate::TSCLI => vec![Linter::ESLint],
+            StackTemplate::RSAPI | StackTemplate::RSCLI | StackTemplate::RSWEB => {
+                vec![Linter::Clippy]
+            }
         };
 
         let formatters = match options.stack {
@@ -162,6 +166,7 @@ impl ScaffoldConfig {
             cargo_deps,
             subfolders,
             containers: options.containers,
+            user_options: options,
         }
     }
 
@@ -220,5 +225,9 @@ impl ScaffoldConfig {
 
     pub fn has_language(&self, language: &Language) -> bool {
         self.languages.contains(language)
+    }
+
+    pub fn get_stack(&self) -> &StackTemplate {
+        &self.user_options.stack
     }
 }
