@@ -2,6 +2,7 @@ mod builder;
 mod config;
 mod db_client;
 mod dialogue;
+mod file_system;
 mod formatters;
 mod linters;
 mod module;

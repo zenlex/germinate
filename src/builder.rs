@@ -1,10 +1,13 @@
-use crate::{config::ScaffoldConfig, module::Module};
+use crate::{config::ScaffoldConfig, dialogue::StackTemplate, file_system, module::Module};
 use std::{
+    env,
     fmt::{self, Debug, Formatter},
+    fs::{self, OpenOptions},
+    io::Write,
     process::Command,
     vec,
 };
-
+use toml::toml;
 pub struct ProjectBuilder {
     config: ScaffoldConfig,
 }
@@ -20,9 +23,12 @@ impl ProjectBuilder {
         std::env::set_current_dir(self.config.get_root_dir())
             .expect("Failed to set current directory");
 
-        let commands = self.get_install_commands();
+        // Copy templates and manifests
+        let _ = self.pre_install_commands();
 
-        for mut command in commands {
+        let install_commands = self.get_install_commands();
+
+        for mut command in install_commands {
             println!("Running command: {:?}", command);
             let output = command.output().expect("Failed to execute command");
             println!("->> STDOUT: {}", String::from_utf8_lossy(&output.stdout));
@@ -285,9 +291,43 @@ impl ProjectBuilder {
         commands
     }
 
+    fn pre_install_commands(&self) -> std::io::Result<()> {
+        println!("Running pre-install commands...");
+
+        let template_dir = env::current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join(self.config.get_stack().get_path().parent().unwrap())
+            .join("before_install");
+
+        file_system::copy_dir_all(template_dir, env::current_dir().unwrap())
+    }
+
     fn post_install_commands(&self) {
         println!("Running post-install commands...");
         match self.config.get_stack() {
+            StackTemplate::RSWEB => {
+                let mut manifest = OpenOptions::new()
+                    .append(true)
+                    .open("Cargo.toml")
+                    .expect("Failed to open Cargo.toml");
+                manifest
+                    .write("\n".as_bytes())
+                    .expect("Failed to write to Cargo.toml");
+                manifest
+                    .write(
+                        (toml! {
+                        [features]
+                        default = []
+                        ssr = ["dioxus-fullstack/axum"]
+                        web = ["dioxus-fullstack/web"]
+                                    })
+                        .to_string()
+                        .as_bytes(),
+                    )
+                    .expect("Failed to write to Cargo.toml");
+            }
             _ => {}
         }
     }
