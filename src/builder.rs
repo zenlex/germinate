@@ -4,7 +4,7 @@ use std::{
     fmt::{self, Debug, Formatter},
     fs::{self, OpenOptions},
     io::Write,
-    process::Command,
+    process::{Command, Stdio},
     vec,
 };
 use toml::toml;
@@ -308,25 +308,20 @@ impl ProjectBuilder {
         println!("Running post-install commands...");
         match self.config.get_stack() {
             StackTemplate::RSWEB => {
-                let mut manifest = OpenOptions::new()
-                    .append(true)
-                    .open("Cargo.toml")
-                    .expect("Failed to open Cargo.toml");
-                manifest
-                    .write("\n".as_bytes())
-                    .expect("Failed to write to Cargo.toml");
-                manifest
-                    .write(
-                        (toml! {
-                        [features]
-                        default = []
-                        ssr = ["dioxus-fullstack/axum"]
-                        web = ["dioxus-fullstack/web"]
-                                    })
-                        .to_string()
-                        .as_bytes(),
-                    )
-                    .expect("Failed to write to Cargo.toml");
+                if dialoguer::Confirm::new()
+                    .with_prompt("Would you like to create a Vue/Vite SPA?")
+                    .interact()
+                    .unwrap()
+                {
+                    println!("->> Creating Vue/Vite SPA");
+                    let mut command = Command::new("npm");
+                    command
+                        .args(&["create", "vue@latest"])
+                        .spawn()
+                        .unwrap()
+                        .wait()
+                        .unwrap();
+                }
             }
             _ => {}
         }

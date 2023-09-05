@@ -79,7 +79,7 @@ impl ScaffoldConfig {
             Some(db_platform) => match db_platform {
                 Database::Postgres => match options.stack {
                     StackTemplate::Laravel => None,
-                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
+                    StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
                         true => Some(DbClient::Diesel),
                         false => Some(DbClient::Sqlx),
                     },
@@ -90,7 +90,7 @@ impl ScaffoldConfig {
                 },
                 Database::Sqlite => match options.stack {
                     StackTemplate::Laravel => None,
-                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
+                    StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
                         true => Some(DbClient::Diesel),
                         false => Some(DbClient::Sqlx),
                     },
@@ -101,7 +101,7 @@ impl ScaffoldConfig {
                 },
                 Database::Mongo => match options.stack {
                     StackTemplate::Laravel => Some(DbClient::MongoDb),
-                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
+                    StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
                         true => panic!("No Rust ORM for MongoDB"),
                         false => Some(DbClient::MongoDb),
                     },
@@ -118,7 +118,7 @@ impl ScaffoldConfig {
             StackTemplate::Laravel => {
                 vec![Language::PHP, Language::TypeScript, Language::JavaScript]
             }
-            StackTemplate::RSAPI => vec![Language::Rust],
+            StackTemplate::RSWEB => vec![Language::Rust],
             StackTemplate::RSCLI => vec![Language::Rust],
             _ => vec![Language::TypeScript, Language::JavaScript],
         };
@@ -137,14 +137,14 @@ impl ScaffoldConfig {
             StackTemplate::Laravel => vec![Linter::ESLint, Linter::Stylelint, Linter::Larastan],
             StackTemplate::TSWEB => vec![Linter::ESLint, Linter::Stylelint],
             StackTemplate::TSAPI | StackTemplate::TSCLI => vec![Linter::ESLint],
-            StackTemplate::RSAPI | StackTemplate::RSCLI | StackTemplate::RSWEB => {
+            StackTemplate::RSCLI | StackTemplate::RSWEB => {
                 vec![Linter::Clippy]
             }
         };
 
         let formatters = match options.stack {
             StackTemplate::Laravel => vec![Formatter::Pint],
-            StackTemplate::RSAPI | StackTemplate::RSCLI => vec![Formatter::Rustfmt],
+            StackTemplate::RSWEB | StackTemplate::RSCLI => vec![Formatter::Rustfmt],
             _ => vec![],
         };
 
