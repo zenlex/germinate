@@ -4,6 +4,7 @@ use std::{
     fmt::{self, Debug, Formatter},
     fs::{self, OpenOptions},
     io::Write,
+    path::PathBuf,
     process::{Command, Stdio},
     vec,
 };
@@ -294,18 +295,13 @@ impl ProjectBuilder {
     fn pre_install_commands(&self) -> std::io::Result<()> {
         println!("Running pre-install commands...");
 
-        let template_dir = env::current_exe()
-            .unwrap()
-            .parent()
-            .unwrap()
-            .join(self.config.get_stack().get_path().parent().unwrap())
-            .join("before_install");
-
-        file_system::copy_dir_all(template_dir, env::current_dir().unwrap())
+        let pre_install_path = self.template_dir().join("before_install");
+        file_system::copy_dir_all(pre_install_path, env::current_dir().unwrap())
     }
 
     fn post_install_commands(&self) {
         println!("Running post-install commands...");
+        // stack specific commands
         match self.config.get_stack() {
             StackTemplate::RSWEB => {
                 if dialoguer::Confirm::new()
@@ -325,6 +321,19 @@ impl ProjectBuilder {
             }
             _ => {}
         }
+
+        // general commands
+        println!("->> Copying Post-install templates...");
+        let post_install_path = self.template_dir().join("after_install");
+        file_system::copy_dir_all(post_install_path, env::current_dir().unwrap());
+    }
+
+    fn template_dir(&self) -> PathBuf {
+        env::current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join(self.config.get_stack().get_path().parent().unwrap())
     }
 }
 
