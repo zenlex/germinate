@@ -1,0 +1,18 @@
+# General Config
+title = "tsapi"
+description ="TS API with Hono and Bun, optional Vue SPA"
+
+[subfolders] 
+src = {}
+
+# Scripts
+[scripts.npm]
+start = "bun run index.ts"
+dev = "bun run --hot src/index.ts"
+
+# Dependencies
+[[deps.npm]]
+name="bun-types"
+
+[[deps.npm]]
+name="hono"

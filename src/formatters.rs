@@ -10,8 +10,8 @@ impl Formatter {
     pub fn get_install_commands(&self) -> Vec<Command> {
         match self {
             Formatter::Pint => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("pint").arg("--save-dev");
+                let mut command = Command::new("composer");
+                command.arg("require").arg("pint").arg("--dev");
                 vec![command]
             }
             Formatter::Rustfmt => {

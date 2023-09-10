@@ -10,13 +10,13 @@ use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterat
 
 #[derive(Debug, Clone, EnumVariantNames, EnumString, EnumIter, EnumProperty)]
 pub enum StackTemplate {
-    #[strum(props(Label = "SSR JavaScript/TypeScript"))]
+    #[strum(props(Label = "SSR TypeScript"))]
     TSWEB,
     #[strum(props(Label = "Laravel with Vue + Inertia"))]
     Laravel,
-    #[strum(props(Label = "TypeScript API (backend only)"))]
+    #[strum(props(Label = "TypeScript API, optional frontend"))]
     TSAPI,
-    #[strum(props(Label = "Rust Web App"))]
+    #[strum(props(Label = "Rust Web App, optional frontend"))]
     RSWEB,
     #[strum(props(Label = "Rust CLI Tool"))]
     RSCLI,
@@ -44,12 +44,18 @@ pub struct UserOptions {
     pub db: Option<Database>,
     pub orm: bool,
     pub cms: bool,
+    pub spa: bool,
+    pub template_engine: bool,
     pub test_frameworks: Vec<TestFramework>,
     pub containers: bool,
 }
 
 pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
     let stack = get_stack();
+    let (spa, template_engine) = match stack {
+        StackTemplate::RSWEB | StackTemplate::TSAPI => get_frontend(),
+        _ => (false, false),
+    };
     let app_name = get_app_name();
     let output_dir = slugify(&app_name);
     let db = get_db();
@@ -73,6 +79,8 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         db,
         orm,
         cms,
+        spa,
+        template_engine,
         test_frameworks,
         containers,
     };
@@ -154,6 +162,28 @@ fn get_cms() -> bool {
         == 0
 }
 
+fn get_frontend() -> (bool, bool) {
+    let spa = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Would you like to use a SPA?")
+        .items(&["Yes", "No"])
+        .interact()
+        .expect("Failed to get SPA selection from user")
+        == 0;
+
+    let template = match spa {
+        true => false,
+        false => {
+            Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Would you like to use a frontend template engine?")
+                .items(&["Yes", "No"])
+                .interact()
+                .expect("Failed to get frontend template selection from user")
+                == 0
+        }
+    };
+
+    (spa, template)
+}
 fn test_frameworks_prompt() -> Vec<TestFramework> {
     let test_frameworks = TestFramework::VARIANTS;
     let prompt_labels = test_frameworks.clone();

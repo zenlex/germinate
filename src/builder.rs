@@ -2,13 +2,11 @@ use crate::{config::ScaffoldConfig, dialogue::StackTemplate, file_system, module
 use std::{
     env,
     fmt::{self, Debug, Formatter},
-    fs::{self, OpenOptions},
-    io::Write,
     path::PathBuf,
-    process::{Command, Stdio},
+    process::Command,
     vec,
 };
-use toml::toml;
+
 pub struct ProjectBuilder {
     config: ScaffoldConfig,
 }
@@ -98,8 +96,8 @@ impl ProjectBuilder {
             commands.push(cargo_init);
         }
         if self.config.get_npm_deps().is_some() {
-            let mut npm_init = Command::new("npm");
-            npm_init.arg("init").arg("-y");
+            let mut npm_init = Command::new("bun");
+            npm_init.arg("init");
             commands.push(npm_init);
         }
         if self.config.get_composer_deps().is_some() {
@@ -116,8 +114,8 @@ impl ProjectBuilder {
         let mut commands = vec![];
         if let Some(npm_modules) = self.config.get_npm_deps() {
             for module in npm_modules {
-                let mut command = Command::new("npm");
-                command.arg("install");
+                let mut command = Command::new("bun");
+                command.arg("add");
 
                 if module.get_version() != "latest" {
                     command.arg(format!("{}@{}", module.get_name(), module.get_version()));
@@ -126,7 +124,7 @@ impl ProjectBuilder {
                 }
 
                 if module.is_dev() {
-                    command.arg("--save-dev");
+                    command.arg("--dev");
                 }
 
                 commands.push(command);
@@ -301,31 +299,50 @@ impl ProjectBuilder {
 
     fn post_install_commands(&self) {
         println!("Running post-install commands...");
+        let stack = self.config.get_stack();
         // stack specific commands
-        match self.config.get_stack() {
-            StackTemplate::RSWEB => {
-                if dialoguer::Confirm::new()
-                    .with_prompt("Would you like to create a Vue/Vite SPA?")
-                    .interact()
-                    .unwrap()
-                {
-                    println!("->> Creating Vue/Vite SPA");
-                    let mut command = Command::new("npm");
-                    command
-                        .args(&["create", "vue@latest"])
-                        .spawn()
-                        .unwrap()
-                        .wait()
-                        .unwrap();
+        match stack {
+            StackTemplate::RSWEB | StackTemplate::TSAPI => {
+                let frontend_command = match self.config.get_spa() {
+                    true => {
+                        println!("->> Creating Vue/Vite SPA");
+                        let mut command = Command::new("bun");
+                        command.args(&["create", "vue@latest"]);
+                        Some(command)
+                    }
+                    false => match self.config.get_template_engine() {
+                        true => {
+                            println!("->> installing template engine");
+                            match stack {
+                                StackTemplate::TSAPI => {
+                                    let mut command = Command::new("bun");
+                                    command.args(&["add", "handlebars"]);
+                                    Some(command)
+                                }
+                                StackTemplate::RSWEB => {
+                                    let mut command = Command::new("cargo");
+                                    command.args(&["add", "handlebars"]);
+                                    Some(command)
+                                }
+                                _ => None,
+                            }
+                        }
+                        false => None,
+                    },
+                };
+
+                if frontend_command.is_some() {
+                    frontend_command.unwrap().spawn().unwrap().wait().unwrap();
                 }
             }
-            _ => {}
+            _ => (),
         }
 
         // general commands
         println!("->> Copying Post-install templates...");
         let post_install_path = self.template_dir().join("after_install");
-        file_system::copy_dir_all(post_install_path, env::current_dir().unwrap());
+        file_system::copy_dir_all(post_install_path, env::current_dir().unwrap())
+            .expect("unable to copy dir");
     }
 
     fn template_dir(&self) -> PathBuf {

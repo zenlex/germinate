@@ -12,8 +12,8 @@ impl Linter {
     pub fn get_install_commands(&self) -> Vec<Command> {
         match self {
             Linter::ESLint => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("eslint").arg("--save-dev");
+                let mut command = Command::new("bun");
+                command.arg("add").arg("eslint").arg("--dev");
                 vec![command]
             }
             Linter::Larastan => {
@@ -25,8 +25,8 @@ impl Linter {
                 vec![command]
             }
             Linter::Stylelint => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("stylelint").arg("--save-dev");
+                let mut command = Command::new("bun");
+                command.arg("add").arg("stylelint").arg("--dev");
                 vec![command]
             }
             Linter::Clippy => {

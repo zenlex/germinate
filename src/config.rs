@@ -230,4 +230,12 @@ impl ScaffoldConfig {
     pub fn get_stack(&self) -> &StackTemplate {
         &self.user_options.stack
     }
+
+    pub fn get_spa(&self) -> bool {
+        self.user_options.spa
+    }
+
+    pub fn get_template_engine(&self) -> bool {
+        self.user_options.template_engine
+    }
 }

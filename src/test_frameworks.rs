@@ -14,13 +14,13 @@ impl TestFramework {
     pub fn get_install_commands(&self) -> Vec<Command> {
         match self {
             TestFramework::Jest => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("jest").arg("--save-dev");
+                let mut command = Command::new("bun");
+                command.arg("add").arg("jest").arg("--dev");
                 vec![command]
             }
             TestFramework::Vitest => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("vitest").arg("--save-dev");
+                let mut command = Command::new("bun");
+                command.arg("add").arg("vitest").arg("--dev");
                 vec![command]
             }
             TestFramework::Pest => {
@@ -29,8 +29,8 @@ impl TestFramework {
                 vec![command]
             }
             TestFramework::Playwright => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("playwright").arg("--save-dev");
+                let mut command = Command::new("bun");
+                command.arg("add").arg("playwright").arg("--dev");
                 vec![command]
             }
         }

@@ -55,26 +55,26 @@ impl DbClient {
                 vec![command]
             }
             DbClient::Prisma => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("prisma").arg("--save-dev");
+                let mut command = Command::new("bun");
+                command.arg("add").arg("prisma").arg("--dev");
 
-                let init_command = Command::new("npx");
+                let init_command = Command::new("bunx");
                 command.arg("prisma").arg("init");
 
                 vec![command, init_command]
             }
             DbClient::Slonik => {
                 if let Database::Postgres = db {
-                    let mut command = Command::new("npm");
-                    command.arg("install").arg("slonik").arg("--save-dev");
+                    let mut command = Command::new("bun");
+                    command.arg("add").arg("slonik").arg("--dev");
                     vec![command]
                 } else {
                     panic!("No Slonik support for non-Postgres databases")
                 }
             }
             DbClient::BetterSqlite => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("better-sqlite3");
+                let mut command = Command::new("bun");
+                command.arg("add").arg("better-sqlite3");
                 vec![command]
             }
             DbClient::MongoDb => {
@@ -87,14 +87,14 @@ impl DbClient {
                     command.arg("require").arg("jessengers/mongodb");
                     vec![command]
                 } else {
-                    let mut command = Command::new("npm");
-                    command.arg("install").arg("mongodb");
+                    let mut command = Command::new("bun");
+                    command.arg("add").arg("mongodb");
                     vec![command]
                 }
             }
             DbClient::Mongoose => {
-                let mut command = Command::new("npm");
-                command.arg("install").arg("mongoose");
+                let mut command = Command::new("bun");
+                command.arg("add").arg("mongoose");
                 vec![command]
             }
         }

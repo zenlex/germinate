@@ -5,7 +5,3 @@ description = "Rust Web App"
 # Web Framework
 [[deps.cargo]]
 name = "axum"
-
-# Template Engine
-[[deps.cargo]]
-name = "handlebars"
