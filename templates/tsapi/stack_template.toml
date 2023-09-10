@@ -16,3 +16,12 @@ name="bun-types"
 
 [[deps.npm]]
 name="hono"
+
+[[deps.npm]]
+name="@hono/zod-validator"
+
+[[deps.npm]]
+name="@hono/client"
+
+[[deps.npm]]
+name="zod"
