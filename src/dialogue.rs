@@ -52,10 +52,7 @@ pub struct UserOptions {
 
 pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
     let stack = get_stack();
-    let (spa, template_engine) = match stack {
-        StackTemplate::RSWEB | StackTemplate::TSAPI => get_frontend(),
-        _ => (false, false),
-    };
+    let (spa, template_engine) = get_frontend(&stack);
     let app_name = get_app_name();
     let output_dir = slugify(&app_name);
     let db = get_db();
@@ -63,12 +60,10 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         Some(_) => get_orm(),
         None => false,
     };
-
     let cms = match stack {
         StackTemplate::RSCLI | StackTemplate::TSCLI => false,
         _ => get_cms(),
     };
-
     let test_frameworks = test_frameworks_prompt();
     let containers = containers_prompt();
 
@@ -162,27 +157,31 @@ fn get_cms() -> bool {
         == 0
 }
 
-fn get_frontend() -> (bool, bool) {
-    let spa = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Would you like to use a SPA?")
-        .items(&["Yes", "No"])
-        .interact()
-        .expect("Failed to get SPA selection from user")
-        == 0;
-
-    let template = match spa {
-        true => false,
-        false => {
-            Select::with_theme(&ColorfulTheme::default())
-                .with_prompt("Would you like to use a frontend template engine?")
+fn get_frontend(stack: &StackTemplate) -> (bool, bool) {
+    match stack {
+        StackTemplate::RSWEB | StackTemplate::TSAPI => {
+            let spa = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Would you like to use a SPA?")
                 .items(&["Yes", "No"])
                 .interact()
-                .expect("Failed to get frontend template selection from user")
-                == 0
-        }
-    };
+                .expect("Failed to get SPA selection from user")
+                == 0;
 
-    (spa, template)
+            let template = match spa {
+                true => false,
+                false => {
+                    Select::with_theme(&ColorfulTheme::default())
+                        .with_prompt("Would you like to use a frontend template engine?")
+                        .items(&["Yes", "No"])
+                        .interact()
+                        .expect("Failed to get frontend template selection from user")
+                        == 0
+                }
+            };
+            return (spa, template);
+        }
+        _ => return (false, false),
+    }
 }
 fn test_frameworks_prompt() -> Vec<TestFramework> {
     let test_frameworks = TestFramework::VARIANTS;
