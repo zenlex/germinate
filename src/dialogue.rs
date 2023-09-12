@@ -3,7 +3,7 @@ use std::{
     str::FromStr,
 };
 
-use dialoguer::{theme::ColorfulTheme, Input, Select};
+use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use slug::slugify;
 use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
 
@@ -104,13 +104,12 @@ fn get_stack() -> StackTemplate {
 }
 
 fn get_db() -> Option<Database> {
-    let use_db = Select::with_theme(&ColorfulTheme::default())
+    let use_db = Confirm::with_theme(&ColorfulTheme::default())
         .with_prompt("Would you like to use a database?")
-        .items(&["Yes", "No"])
         .interact()
         .ok()?;
 
-    let db = if use_db == 0 {
+    let db = if use_db {
         Some(get_db_platform())
     } else {
         None
@@ -130,34 +129,26 @@ fn get_db_platform() -> Database {
 }
 
 fn get_orm() -> bool {
-    Select::with_theme(&ColorfulTheme::default())
+    Confirm::with_theme(&ColorfulTheme::default())
         .with_prompt("Would you like to use an ORM?")
-        .items(&["Yes", "No"])
         .interact()
         .expect("Failed to get ORM selection from user")
-        == 0
 }
 
 fn get_frontend(stack: &StackTemplate) -> (bool, bool) {
     match stack {
         StackTemplate::RSWEB | StackTemplate::TSAPI => {
-            let spa = Select::with_theme(&ColorfulTheme::default())
+            let spa = Confirm::with_theme(&ColorfulTheme::default())
                 .with_prompt("Would you like to use a SPA?")
-                .items(&["Yes", "No"])
                 .interact()
-                .expect("Failed to get SPA selection from user")
-                == 0;
+                .expect("Failed to get SPA selection from user");
 
             let template = match spa {
                 true => false,
-                false => {
-                    Select::with_theme(&ColorfulTheme::default())
-                        .with_prompt("Would you like to use a frontend template engine?")
-                        .items(&["Yes", "No"])
-                        .interact()
-                        .expect("Failed to get frontend template selection from user")
-                        == 0
-                }
+                false => Confirm::with_theme(&ColorfulTheme::default())
+                    .with_prompt("Would you like to use a frontend template engine?")
+                    .interact()
+                    .expect("Failed to get template engine selection from user"),
             };
             return (spa, template);
         }
@@ -166,10 +157,8 @@ fn get_frontend(stack: &StackTemplate) -> (bool, bool) {
 }
 
 fn containers_prompt() -> bool {
-    Select::with_theme(&ColorfulTheme::default())
+    Confirm::with_theme(&ColorfulTheme::default())
         .with_prompt("Would you like to use Docker containers?")
-        .items(&["Yes", "No"])
         .interact()
         .expect("Failed to get containers selection from user")
-        == 0
 }
