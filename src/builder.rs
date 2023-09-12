@@ -1,3 +1,5 @@
+use dialoguer::{theme::ColorfulTheme, Confirm};
+
 use crate::{config::ScaffoldConfig, dialogue::StackTemplate, file_system, module::Module};
 use std::{
     env,
@@ -317,6 +319,17 @@ impl ProjectBuilder {
 
                 if frontend_command.is_some() {
                     frontend_command.unwrap().spawn().unwrap().wait().unwrap();
+                }
+            }
+            StackTemplate::TSWEB => {
+                if Confirm::with_theme(&ColorfulTheme::default())
+                    .with_prompt("Would you like to install Playwright?")
+                    .interact()
+                    .expect("Unable to get e2e testing selecion")
+                {
+                    let mut command = Command::new("npm");
+                    command.args(&["init", "playwright@latest"]);
+                    command.spawn().unwrap().wait().unwrap();
                 }
             }
             _ => (),
