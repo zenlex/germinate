@@ -97,7 +97,7 @@ impl ProjectBuilder {
         }
         if self.config.get_npm_deps().is_some() {
             let mut npm_init = Command::new("bun");
-            npm_init.arg("init");
+            npm_init.args(&["init", "-y"]);
             commands.push(npm_init);
         }
         if self.config.get_composer_deps().is_some() {

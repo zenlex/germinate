@@ -23,6 +23,9 @@ name = "astro"
 dev = true
 
 [[deps.npm]]
+name = "@astrojs/node"
+
+[[deps.npm]]
 name = "@astrojs/vue"
 
 [[deps.npm]]
