@@ -3,8 +3,7 @@ use std::{
     str::FromStr,
 };
 
-use crate::test_frameworks::TestFramework;
-use dialoguer::{theme::ColorfulTheme, Input, MultiSelect, Select};
+use dialoguer::{theme::ColorfulTheme, Input, Select};
 use slug::slugify;
 use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterator, VariantNames};
 
@@ -45,7 +44,6 @@ pub struct UserOptions {
     pub orm: bool,
     pub spa: bool,
     pub template_engine: bool,
-    pub test_frameworks: Vec<TestFramework>,
     pub containers: bool,
 }
 
@@ -59,7 +57,6 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         Some(_) => get_orm(),
         None => false,
     };
-    let test_frameworks = test_frameworks_prompt();
     let containers = containers_prompt();
 
     let user_config = UserOptions {
@@ -70,7 +67,6 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         orm,
         spa,
         template_engine,
-        test_frameworks,
         containers,
     };
 
@@ -167,24 +163,6 @@ fn get_frontend(stack: &StackTemplate) -> (bool, bool) {
         }
         _ => return (false, false),
     }
-}
-fn test_frameworks_prompt() -> Vec<TestFramework> {
-    let test_frameworks = TestFramework::VARIANTS;
-    let prompt_labels = test_frameworks.clone();
-    let test_framework_indexes = MultiSelect::with_theme(&ColorfulTheme::default())
-        .with_prompt("What test frameworks would you like to use?")
-        .items(&prompt_labels)
-        .interact()
-        .expect("Failed to get test frameworks selection from user");
-    let mut results = vec![];
-    for index in test_framework_indexes {
-        results.push(
-            <TestFramework as FromStr>::from_str(test_frameworks[index])
-                .expect("Invalid test framework name"),
-        );
-    }
-
-    results
 }
 
 fn containers_prompt() -> bool {

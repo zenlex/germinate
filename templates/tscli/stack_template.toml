@@ -5,3 +5,7 @@ description = "TypeScript Node CLI Tool"
 [[deps.npm]]
 name="typescript"
 dev="true"
+
+[[deps.npm]]
+name = "vitest"
+dev = true

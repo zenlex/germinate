@@ -1,3 +1,35 @@
 # General Config
 title = "laravel"
 description = "Laravel Web App"
+
+[[deps.composer]]
+name = "pestphp/pest"
+dev = true
+
+[[deps.npm]]
+name = "eslint-plugin-vue"
+dev = true
+
+[[deps.npm]]
+name = "@typescript-eslint/parser"
+dev = true
+
+[[deps.npm]]
+name = "eslint-plugin-jsx-a11y"
+dev= true
+
+[[deps.npm]]
+name = "@testing-library/vue"
+dev = true
+
+[[deps.npm]]
+name = "@testing-library/jest-dom"
+dev = true
+
+[[deps.npm]]
+name = "@testing-library/user-event"
+dev = true
+
+[[deps.npm]]
+name = "vitest"
+dev = true

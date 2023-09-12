@@ -16,6 +16,7 @@ components = {}
 "start" = "astro dev"
 "build" = "astro build"
 "preview" = "astro preview"
+"test" = "vitest"
 
 # Dependencies
 [[deps.npm]]
@@ -46,3 +47,19 @@ dev = true
 [[deps.npm]]
 name = "eslint-plugin-jsx-a11y"
 dev= true
+
+[[deps.npm]]
+name = "@testing-library/vue"
+dev = true
+
+[[deps.npm]]
+name = "@testing-library/jest-dom"
+dev = true
+
+[[deps.npm]]
+name = "@testing-library/user-event"
+dev = true
+
+[[deps.npm]]
+name = "vitest"
+dev = true

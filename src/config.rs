@@ -7,7 +7,6 @@ use crate::{
     formatters::Formatter,
     linters::Linter,
     module::Module,
-    test_frameworks::TestFramework,
     toml_parser::TomlTemplate,
 };
 
@@ -31,7 +30,6 @@ pub struct ScaffoldConfig {
     title: String,
     root_dir: PathBuf,
     languages: Vec<Language>,
-    test_frameworks: Vec<TestFramework>,
     db: Option<Database>,
     db_client: Option<DbClient>,
     linters: Vec<Linter>,
@@ -116,8 +114,6 @@ impl ScaffoldConfig {
             _ => vec![Language::TypeScript, Language::JavaScript],
         };
 
-        let test_frameworks = options.test_frameworks.clone();
-
         let linters = match options.stack {
             StackTemplate::Laravel => vec![Linter::ESLint, Linter::Stylelint, Linter::Larastan],
             StackTemplate::TSWEB => vec![Linter::ESLint, Linter::Stylelint],
@@ -137,7 +133,6 @@ impl ScaffoldConfig {
             title,
             root_dir,
             languages,
-            test_frameworks,
             db,
             db_client,
             linters,
@@ -193,10 +188,6 @@ impl ScaffoldConfig {
 
     pub fn get_formatters(&self) -> &Vec<Formatter> {
         &self.formatters
-    }
-
-    pub fn get_test_frameworks(&self) -> &Vec<TestFramework> {
-        &self.test_frameworks
     }
 
     pub fn get_database(&self) -> &Option<Database> {
