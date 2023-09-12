@@ -43,7 +43,6 @@ pub struct UserOptions {
     pub app_name: String,
     pub db: Option<Database>,
     pub orm: bool,
-    pub cms: bool,
     pub spa: bool,
     pub template_engine: bool,
     pub test_frameworks: Vec<TestFramework>,
@@ -60,10 +59,6 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         Some(_) => get_orm(),
         None => false,
     };
-    let cms = match stack {
-        StackTemplate::RSCLI | StackTemplate::TSCLI => false,
-        _ => get_cms(),
-    };
     let test_frameworks = test_frameworks_prompt();
     let containers = containers_prompt();
 
@@ -73,7 +68,6 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         output_dir: Path::new(&output_dir).to_path_buf(),
         db,
         orm,
-        cms,
         spa,
         template_engine,
         test_frameworks,
@@ -145,15 +139,6 @@ fn get_orm() -> bool {
         .items(&["Yes", "No"])
         .interact()
         .expect("Failed to get ORM selection from user")
-        == 0
-}
-
-fn get_cms() -> bool {
-    Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Would you like to use a CMS?")
-        .items(&["Yes", "No"])
-        .interact()
-        .expect("Failed to get CMS selection from user")
         == 0
 }
 

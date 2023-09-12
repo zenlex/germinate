@@ -16,12 +16,6 @@ type CargoDeps = Vec<Module>;
 type ComposerDeps = Vec<Module>;
 pub type PackageScripts = HashMap<String, String>;
 
-#[derive(Debug, Clone)]
-enum CMS {
-    Filament,
-    Strapi,
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Language {
     Rust,
@@ -40,7 +34,6 @@ pub struct ScaffoldConfig {
     test_frameworks: Vec<TestFramework>,
     db: Option<Database>,
     db_client: Option<DbClient>,
-    cms: Option<CMS>,
     linters: Vec<Linter>,
     formatters: Vec<Formatter>,
     npm_scripts: Option<PackageScripts>,
@@ -125,14 +118,6 @@ impl ScaffoldConfig {
 
         let test_frameworks = options.test_frameworks.clone();
 
-        let cms = match options.cms {
-            true => match options.stack {
-                StackTemplate::Laravel => Some(CMS::Filament),
-                _ => Some(CMS::Strapi),
-            },
-            false => None,
-        };
-
         let linters = match options.stack {
             StackTemplate::Laravel => vec![Linter::ESLint, Linter::Stylelint, Linter::Larastan],
             StackTemplate::TSWEB => vec![Linter::ESLint, Linter::Stylelint],
@@ -155,7 +140,6 @@ impl ScaffoldConfig {
             test_frameworks,
             db,
             db_client,
-            cms,
             linters,
             formatters,
             npm_scripts,
