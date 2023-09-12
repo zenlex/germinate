@@ -4,8 +4,20 @@ description = "TypeScript Node CLI Tool"
 
 [[deps.npm]]
 name="typescript"
-dev="true"
+dev= true
 
 [[deps.npm]]
 name = "vitest"
 dev = true
+
+[[deps.npm]]
+name = "commander"
+
+[[deps.npm]]
+name = "inquirer"
+
+[[deps.npm]]
+name = "chalk"
+
+[[deps.npm]]
+name = "cli-progress"
