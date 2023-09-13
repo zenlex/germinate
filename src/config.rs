@@ -23,19 +23,19 @@ pub enum Language {
 #[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct ScaffoldConfig {
-    user_options: UserOptions,
-    title: String,
-    root_dir: PathBuf,
-    languages: Vec<Language>,
-    db: Option<Database>,
-    db_client: Option<DbClient>,
-    linters: Vec<Linter>,
-    npm_scripts: Option<PackageScripts>,
-    cargo_scripts: Option<PackageScripts>,
-    npm_deps: Option<NpmDeps>,
-    cargo_deps: Option<CargoDeps>,
-    subfolders: Option<Vec<PathBuf>>,
-    containers: bool,
+    pub user_options: UserOptions,
+    pub title: String,
+    pub root_dir: PathBuf,
+    pub languages: Vec<Language>,
+    pub db: Option<Database>,
+    pub db_client: Option<DbClient>,
+    pub linters: Vec<Linter>,
+    pub npm_scripts: Option<PackageScripts>,
+    pub cargo_scripts: Option<PackageScripts>,
+    pub npm_deps: Option<NpmDeps>,
+    pub cargo_deps: Option<CargoDeps>,
+    pub subfolders: Option<Vec<PathBuf>>,
+    pub containers: bool,
 }
 
 impl ScaffoldConfig {
@@ -125,56 +125,7 @@ impl ScaffoldConfig {
         }
     }
 
-    pub fn get_subfolders(&self) -> Option<&Vec<PathBuf>> {
-        self.subfolders.as_ref()
-    }
-
-    pub fn get_root_dir(&self) -> &PathBuf {
-        &self.root_dir
-    }
-
-    pub fn get_npm_deps(&self) -> &Option<NpmDeps> {
-        &self.npm_deps
-    }
-
-    pub fn get_cargo_deps(&self) -> &Option<CargoDeps> {
-        &self.cargo_deps
-    }
-
-    pub fn get_npm_scripts(&self) -> &Option<PackageScripts> {
-        &self.npm_scripts
-    }
-
-    // TODO? May need this later for custom build scripts
-    // pub fn get_cargo_scripts(&self) -> &Option<PackageScripts> {
-    //     &self.cargo_scripts
-    // }
-
-    pub fn get_linters(&self) -> &Vec<Linter> {
-        &self.linters
-    }
-
-    pub fn get_database(&self) -> &Option<Database> {
-        &self.db
-    }
-
-    pub fn get_db_client(&self) -> &Option<DbClient> {
-        &self.db_client
-    }
-
     pub fn has_language(&self, language: &Language) -> bool {
         self.languages.contains(language)
-    }
-
-    pub fn get_stack(&self) -> &StackTemplate {
-        &self.user_options.stack
-    }
-
-    pub fn get_spa(&self) -> bool {
-        self.user_options.spa
-    }
-
-    pub fn get_template_engine(&self) -> bool {
-        self.user_options.template_engine
     }
 }

@@ -21,8 +21,7 @@ impl ProjectBuilder {
     pub fn build(&self) {
         println!("Building project...");
         self.make_folders();
-        std::env::set_current_dir(self.config.get_root_dir())
-            .expect("Failed to set current directory");
+        std::env::set_current_dir(&self.config.root_dir).expect("Failed to set current directory");
 
         // Copy templates and manifests
         let _ = self.pre_install_commands();
@@ -49,8 +48,8 @@ impl ProjectBuilder {
 
     fn make_folders(&self) {
         println!("Making folders...");
-        let root_dir = self.config.get_root_dir();
-        if let Some(folders) = self.config.get_subfolders() {
+        let root_dir = &self.config.root_dir;
+        if let Some(folders) = &self.config.subfolders {
             dbg!(&folders);
             for folder in folders {
                 let full_path = root_dir.join(folder);
@@ -68,13 +67,13 @@ impl ProjectBuilder {
         println!("Queueing install commands...");
         let mut commands = vec![];
         commands.append(&mut self.generate_init_cmds());
-        println!("->> NPM: {:?}", self.config.get_npm_deps());
+        println!("->> NPM: {:?}", self.config.npm_deps);
         commands.append(&mut self.generate_npm_cmds());
-        println!("->> CARGO: {:?}", self.config.get_cargo_deps());
+        println!("->> CARGO: {:?}", self.config.cargo_deps);
         commands.append(&mut self.generate_cargo_cmds());
-        println!("->> LINTERS: {:?}", self.config.get_linters());
+        println!("->> LINTERS: {:?}", self.config.linters);
         commands.append(&mut self.generate_linter_cmds());
-        println!("->> DATABASE_CLIENT: {:?}", self.config.get_database());
+        println!("->> DATABASE_CLIENT: {:?}", self.config.db);
         commands.append(&mut self.generate_db_client_cmds());
 
         commands
@@ -82,12 +81,12 @@ impl ProjectBuilder {
 
     fn generate_init_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        if self.config.get_cargo_deps().is_some() {
+        if self.config.cargo_deps.is_some() {
             let mut cargo_init = Command::new("cargo");
             cargo_init.arg("init");
             commands.push(cargo_init);
         }
-        if self.config.get_npm_deps().is_some() {
+        if self.config.npm_deps.is_some() {
             let mut npm_init = Command::new("bun");
             npm_init.args(&["init", "-y"]);
             commands.push(npm_init);
@@ -98,7 +97,7 @@ impl ProjectBuilder {
 
     fn generate_npm_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        if let Some(npm_modules) = self.config.get_npm_deps() {
+        if let Some(npm_modules) = &self.config.npm_deps {
             for module in npm_modules {
                 let mut command = Command::new("bun");
                 command.arg("add");
@@ -115,7 +114,7 @@ impl ProjectBuilder {
 
                 commands.push(command);
 
-                if let Some(mut cmds) = self.generate_then_cmds(module) {
+                if let Some(mut cmds) = self.generate_then_cmds(&module) {
                     commands.append(&mut cmds);
                 }
             }
@@ -126,7 +125,7 @@ impl ProjectBuilder {
 
     fn generate_cargo_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        if let Some(cargo_modules) = self.config.get_cargo_deps() {
+        if let Some(cargo_modules) = &self.config.cargo_deps {
             for module in cargo_modules {
                 let mut command = Command::new("cargo");
                 command.env("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
@@ -149,7 +148,7 @@ impl ProjectBuilder {
 
                 commands.push(command);
 
-                if let Some(mut cmds) = self.generate_then_cmds(module) {
+                if let Some(mut cmds) = self.generate_then_cmds(&module) {
                     commands.append(&mut cmds);
                 }
             }
@@ -175,7 +174,7 @@ impl ProjectBuilder {
     }
 
     fn set_npm_scripts(&self) {
-        if let Some(npm_scripts) = self.config.get_npm_scripts() {
+        if let Some(npm_scripts) = &self.config.npm_scripts {
             println!("Setting NPM scripts...");
             for (name, script) in npm_scripts {
                 let mut command = Command::new("npm");
@@ -193,7 +192,7 @@ impl ProjectBuilder {
 
     fn generate_linter_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        let linters = self.config.get_linters();
+        let linters = &self.config.linters;
         if linters.len() > 0 {
             for linter in linters {
                 commands.append(&mut linter.get_install_commands());
@@ -204,7 +203,7 @@ impl ProjectBuilder {
 
     fn generate_db_client_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
-        if let Some(db_client) = self.config.get_db_client() {
+        if let Some(db_client) = &self.config.db_client {
             commands.append(&mut db_client.get_install_commands(&self.config));
         }
         commands
@@ -219,18 +218,18 @@ impl ProjectBuilder {
 
     fn post_install_commands(&self) {
         println!("Running post-install commands...");
-        let stack = self.config.get_stack();
+        let stack = &self.config.user_options.stack;
         // stack specific commands
         match stack {
             StackTemplate::RSWEB | StackTemplate::TSAPI => {
-                let frontend_command = match self.config.get_spa() {
+                let frontend_command = match self.config.user_options.spa {
                     true => {
                         println!("->> Creating Vue/Vite SPA");
                         let mut command = Command::new("bun");
                         command.args(&["create", "vue@latest"]);
                         Some(command)
                     }
-                    false => match self.config.get_template_engine() {
+                    false => match self.config.user_options.template_engine {
                         true => {
                             println!("->> installing template engine");
                             match stack {
@@ -281,7 +280,7 @@ impl ProjectBuilder {
             .unwrap()
             .parent()
             .unwrap()
-            .join(self.config.get_stack().get_path().parent().unwrap())
+            .join(self.config.user_options.stack.get_path().parent().unwrap())
     }
 }
 

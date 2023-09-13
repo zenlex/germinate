@@ -51,7 +51,13 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
     let output_dir = slugify(&app_name);
     let db = get_db();
     let orm = match &db {
-        Some(_) => get_orm(),
+        Some(db) => match db {
+            Database::Mongo => match stack {
+                StackTemplate::RSCLI | StackTemplate::RSWEB => false,
+                _ => get_orm(),
+            },
+            _ => get_orm(),
+        },
         None => false,
     };
     let containers = containers_prompt();

@@ -19,7 +19,7 @@ pub enum DbClient {
 impl DbClient {
     pub fn get_install_commands(&self, config: &ScaffoldConfig) -> Vec<Command> {
         let db = config
-            .get_database()
+            .db
             .as_ref()
             .expect("No database specified for client");
         match self {
