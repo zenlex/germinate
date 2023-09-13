@@ -11,8 +11,6 @@ use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterat
 pub enum StackTemplate {
     #[strum(props(Label = "SSR TypeScript"))]
     TSWEB,
-    #[strum(props(Label = "Laravel with Vue + Inertia"))]
-    Laravel,
     #[strum(props(Label = "TypeScript API, optional frontend"))]
     TSAPI,
     #[strum(props(Label = "Rust Web App, optional frontend"))]
@@ -27,7 +25,6 @@ impl StackTemplate {
     pub fn get_path(&self) -> PathBuf {
         match self {
             Self::TSWEB => PathBuf::from("templates/tsweb/stack_template.toml"),
-            Self::Laravel => PathBuf::from("templates/laravel/stack_template.toml"),
             Self::RSWEB => PathBuf::from("templates/rsweb/stack_template.toml"),
             Self::TSCLI => PathBuf::from("templates/tscli/stack_template.toml"),
             Self::RSCLI => PathBuf::from("templates/rscli/stack_template.toml"),

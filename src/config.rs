@@ -4,7 +4,6 @@ use crate::{
     db_client::DbClient,
     dialogue::StackTemplate,
     dialogue::{Database, UserOptions},
-    formatters::Formatter,
     linters::Linter,
     module::Module,
     toml_parser::TomlTemplate,
@@ -12,7 +11,6 @@ use crate::{
 
 type NpmDeps = Vec<Module>;
 type CargoDeps = Vec<Module>;
-type ComposerDeps = Vec<Module>;
 pub type PackageScripts = HashMap<String, String>;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -20,7 +18,6 @@ pub enum Language {
     Rust,
     JavaScript,
     TypeScript,
-    PHP,
 }
 
 #[allow(unused)]
@@ -33,12 +30,9 @@ pub struct ScaffoldConfig {
     db: Option<Database>,
     db_client: Option<DbClient>,
     linters: Vec<Linter>,
-    formatters: Vec<Formatter>,
     npm_scripts: Option<PackageScripts>,
-    composer_scripts: Option<PackageScripts>,
     cargo_scripts: Option<PackageScripts>,
     npm_deps: Option<NpmDeps>,
-    composer_deps: Option<ComposerDeps>,
     cargo_deps: Option<CargoDeps>,
     subfolders: Option<Vec<PathBuf>>,
     containers: bool,
@@ -57,11 +51,9 @@ impl ScaffoldConfig {
         };
 
         let npm_scripts = scripts.get("npm").cloned();
-        let composer_scripts = scripts.get("composer").cloned();
         let cargo_scripts = scripts.get("cargo").cloned();
 
         let npm_deps = dependencies.get("npm").unwrap().clone();
-        let composer_deps = dependencies.get("composer").unwrap().clone();
         let cargo_deps = dependencies.get("cargo").unwrap().clone();
 
         let db = options.db.clone();
@@ -69,7 +61,6 @@ impl ScaffoldConfig {
         let db_client = match &db {
             Some(db_platform) => match db_platform {
                 Database::Postgres => match options.stack {
-                    StackTemplate::Laravel => None,
                     StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
                         true => Some(DbClient::Diesel),
                         false => Some(DbClient::Sqlx),
@@ -80,7 +71,6 @@ impl ScaffoldConfig {
                     },
                 },
                 Database::Sqlite => match options.stack {
-                    StackTemplate::Laravel => None,
                     StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
                         true => Some(DbClient::Diesel),
                         false => Some(DbClient::Sqlx),
@@ -91,7 +81,6 @@ impl ScaffoldConfig {
                     },
                 },
                 Database::Mongo => match options.stack {
-                    StackTemplate::Laravel => Some(DbClient::MongoDb),
                     StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
                         true => panic!("No Rust ORM for MongoDB"),
                         false => Some(DbClient::MongoDb),
@@ -106,27 +95,17 @@ impl ScaffoldConfig {
         };
 
         let languages = match options.stack {
-            StackTemplate::Laravel => {
-                vec![Language::PHP, Language::TypeScript, Language::JavaScript]
-            }
             StackTemplate::RSWEB => vec![Language::Rust],
             StackTemplate::RSCLI => vec![Language::Rust],
             _ => vec![Language::TypeScript, Language::JavaScript],
         };
 
         let linters = match options.stack {
-            StackTemplate::Laravel => vec![Linter::ESLint, Linter::Stylelint, Linter::Larastan],
             StackTemplate::TSWEB => vec![Linter::ESLint, Linter::Stylelint],
             StackTemplate::TSAPI | StackTemplate::TSCLI => vec![Linter::ESLint],
             StackTemplate::RSCLI | StackTemplate::RSWEB => {
                 vec![Linter::Clippy]
             }
-        };
-
-        let formatters = match options.stack {
-            StackTemplate::Laravel => vec![Formatter::Pint],
-            StackTemplate::RSWEB | StackTemplate::RSCLI => vec![Formatter::Rustfmt],
-            _ => vec![],
         };
 
         Self {
@@ -136,12 +115,9 @@ impl ScaffoldConfig {
             db,
             db_client,
             linters,
-            formatters,
             npm_scripts,
-            composer_scripts,
             cargo_scripts,
             npm_deps,
-            composer_deps,
             cargo_deps,
             subfolders,
             containers: options.containers,
@@ -165,10 +141,6 @@ impl ScaffoldConfig {
         &self.cargo_deps
     }
 
-    pub fn get_composer_deps(&self) -> &Option<ComposerDeps> {
-        &self.composer_deps
-    }
-
     pub fn get_npm_scripts(&self) -> &Option<PackageScripts> {
         &self.npm_scripts
     }
@@ -178,16 +150,8 @@ impl ScaffoldConfig {
     //     &self.cargo_scripts
     // }
 
-    pub fn get_composer_scripts(&self) -> &Option<PackageScripts> {
-        &self.composer_scripts
-    }
-
     pub fn get_linters(&self) -> &Vec<Linter> {
         &self.linters
-    }
-
-    pub fn get_formatters(&self) -> &Vec<Formatter> {
-        &self.formatters
     }
 
     pub fn get_database(&self) -> &Option<Database> {

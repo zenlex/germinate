@@ -12,7 +12,7 @@ pub enum DbClient {
     Prisma,       // TS ORM
     Slonik,       // TS typed SQL
     BetterSqlite, // Node SQLite3 driver
-    MongoDb,      // Node/Rust/PHP MongoDB driver
+    MongoDb,      // Node/Rust MongoDB driver
     Mongoose,     // Node MongoDB ORM
 }
 
@@ -81,10 +81,6 @@ impl DbClient {
                 if config.has_language(&Language::Rust) {
                     let mut command = Command::new("cargo");
                     command.arg("add").arg("mongodb");
-                    vec![command]
-                } else if config.has_language(&Language::PHP) {
-                    let mut command = Command::new("composer");
-                    command.arg("require").arg("jessengers/mongodb");
                     vec![command]
                 } else {
                     let mut command = Command::new("bun");

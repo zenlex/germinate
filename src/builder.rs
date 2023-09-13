@@ -37,7 +37,6 @@ impl ProjectBuilder {
         }
 
         self.set_npm_scripts();
-        self.set_composer_scripts();
 
         self.post_install_commands();
         //TODO? Can set custom cargo scripts or makefiles if needed down the road
@@ -73,12 +72,8 @@ impl ProjectBuilder {
         commands.append(&mut self.generate_npm_cmds());
         println!("->> CARGO: {:?}", self.config.get_cargo_deps());
         commands.append(&mut self.generate_cargo_cmds());
-        println!("->> COMPOSER: {:?}", self.config.get_composer_deps());
-        commands.append(&mut self.generate_composer_cmds());
         println!("->> LINTERS: {:?}", self.config.get_linters());
         commands.append(&mut self.generate_linter_cmds());
-        println!("->> FORMATTERS: {:?}", self.config.get_formatters());
-        commands.append(&mut self.generate_formatter_cmds());
         println!("->> DATABASE_CLIENT: {:?}", self.config.get_database());
         commands.append(&mut self.generate_db_client_cmds());
 
@@ -96,12 +91,6 @@ impl ProjectBuilder {
             let mut npm_init = Command::new("bun");
             npm_init.args(&["init", "-y"]);
             commands.push(npm_init);
-        }
-        if self.config.get_composer_deps().is_some() {
-            //TODO: make non-interactive by passing --no-interaction + basic data flags
-            let mut composer_init = Command::new("composer");
-            composer_init.arg("init");
-            commands.push(composer_init);
         }
 
         commands
@@ -168,33 +157,6 @@ impl ProjectBuilder {
         commands
     }
 
-    fn generate_composer_cmds(&self) -> Vec<Command> {
-        let mut commands = vec![];
-        if let Some(composer_modules) = self.config.get_composer_deps() {
-            for module in composer_modules {
-                let mut command = Command::new("composer");
-                command.arg("require");
-
-                if module.get_version() != "latest" {
-                    command.arg(format!("{}@{}", module.get_name(), module.get_version()));
-                } else {
-                    command.arg(module.get_name());
-                }
-
-                if module.is_dev() {
-                    command.arg("--dev");
-                }
-
-                commands.push(command);
-
-                if let Some(mut cmds) = self.generate_then_cmds(module) {
-                    commands.append(&mut cmds);
-                }
-            }
-        }
-        commands
-    }
-
     fn generate_then_cmds(&self, module: &Module) -> Option<Vec<Command>> {
         match module.get_then() {
             Some(cmds) => {
@@ -229,40 +191,12 @@ impl ProjectBuilder {
         }
     }
 
-    fn set_composer_scripts(&self) {
-        if let Some(composer_scripts) = self.config.get_composer_scripts() {
-            println!("Setting Composer scripts...");
-            for (name, script) in composer_scripts {
-                let mut command = Command::new("composer");
-                command
-                    .arg("config --")
-                    .arg(format!("scripts.{}", name))
-                    .arg(script);
-                println!("Running command: {:?}", command);
-                let output = command.output().expect("Failed to execute command");
-                println!("->> STDOUT: {}", String::from_utf8_lossy(&output.stdout));
-                println!("->> STDERR: {}", String::from_utf8_lossy(&output.stderr));
-            }
-        }
-    }
-
     fn generate_linter_cmds(&self) -> Vec<Command> {
         let mut commands = vec![];
         let linters = self.config.get_linters();
         if linters.len() > 0 {
             for linter in linters {
                 commands.append(&mut linter.get_install_commands());
-            }
-        }
-        commands
-    }
-
-    fn generate_formatter_cmds(&self) -> Vec<Command> {
-        let mut commands = vec![];
-        let formatters = self.config.get_formatters();
-        if formatters.len() > 0 {
-            for formatter in formatters {
-                commands.append(&mut formatter.get_install_commands());
             }
         }
         commands

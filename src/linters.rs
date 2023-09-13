@@ -3,7 +3,6 @@ use std::process::Command;
 #[derive(Debug, Clone)]
 pub enum Linter {
     ESLint,
-    Larastan,
     Stylelint,
     Clippy,
 }
@@ -14,14 +13,6 @@ impl Linter {
             Linter::ESLint => {
                 let mut command = Command::new("bun");
                 command.arg("add").arg("eslint").arg("--dev");
-                vec![command]
-            }
-            Linter::Larastan => {
-                let mut command = Command::new("composer");
-                command
-                    .arg("require")
-                    .arg("nunomaduro/larastan")
-                    .arg("--dev");
                 vec![command]
             }
             Linter::Stylelint => {

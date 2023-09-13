@@ -50,7 +50,7 @@ impl TomlTemplate {
             None => panic!("No deps keys found in TOML template file"),
         };
 
-        let package_managers = vec!["npm", "cargo", "composer"];
+        let package_managers = vec!["npm", "cargo"];
         let parsed_deps = Self::fetch_deps(package_managers, deps);
 
         parsed_deps
@@ -133,7 +133,7 @@ impl TomlTemplate {
     }
 
     fn parse_scripts(table: &Map<String, Value>) -> Option<Scripts> {
-        let package_managers = vec!["npm", "cargo", "composer"];
+        let package_managers = vec!["npm", "cargo"];
         match table.get("scripts") {
             Some(scripts) => {
                 let scripts_table = scripts.as_table().expect("Error parsing dependencies");
@@ -240,11 +240,9 @@ pub mod tests {
 
         assert!(deps_table.contains_key("npm"));
         assert!(deps_table.contains_key("cargo"));
-        assert!(deps_table.contains_key("composer"));
 
         assert!(scripts_table.contains_key("npm"));
         assert!(scripts_table.contains_key("cargo"));
-        assert!(scripts_table.contains_key("composer"));
 
         assert!(!subfolders.is_empty());
     }
@@ -252,10 +250,9 @@ pub mod tests {
     #[test]
     fn test_parse_deps() {
         let deps_table = get_deps_table();
-        let parsed_deps = TomlTemplate::fetch_deps(vec!["npm", "cargo", "composer"], &deps_table);
+        let parsed_deps = TomlTemplate::fetch_deps(vec!["npm", "cargo"], &deps_table);
         assert!(parsed_deps.contains_key("npm"));
         assert!(parsed_deps.contains_key("cargo"));
-        assert!(parsed_deps.contains_key("composer"));
     }
 
     #[test]
@@ -321,37 +318,6 @@ pub mod tests {
     }
 
     #[test]
-    fn fetch_composer_deps() {
-        let deps_table = get_deps_table();
-        let parsed_deps = TomlTemplate::fetch_deps(vec!["composer"], &deps_table);
-        assert!(parsed_deps.contains_key("composer"));
-
-        let composer_deps = &parsed_deps["composer"].as_ref().unwrap();
-        assert!(composer_deps
-            .iter()
-            .any(|dep| dep.get_name() == "test_composer_dep_min"));
-        assert!(composer_deps
-            .iter()
-            .any(|dep| dep.get_name() == "test_composer_dev_dep_full"));
-
-        let full_dev_dep = composer_deps
-            .iter()
-            .find(|dep| dep.get_name() == "test_composer_dev_dep_full")
-            .expect("Error finding dep");
-        assert_eq!(full_dev_dep.get_version(), "^1.0.0");
-        assert_eq!(full_dev_dep.is_dev(), true);
-
-        let then_cmds = full_dev_dep.get_then().expect("Error getting then cmds");
-        assert_eq!(then_cmds.len(), 2);
-        assert_eq!(then_cmds[0].len(), 1);
-        assert_eq!(then_cmds[1].len(), 3);
-        assert_eq!(then_cmds[0][0], "naked_command");
-        assert_eq!(then_cmds[1][0], "command_with_args");
-        assert_eq!(then_cmds[1][1], "arg1");
-        assert_eq!(then_cmds[1][2], "arg2");
-    }
-
-    #[test]
     fn extract_npm_scripts() {
         let path = Path::new("test/__mocks__/_test.toml");
         let table = TomlTemplate::get_table(path);
@@ -361,23 +327,6 @@ pub mod tests {
         let npm_scripts = parsed_scripts
             .get("npm")
             .expect("Error getting npm scripts");
-
-        assert_eq!(npm_scripts["dev"], "test dev");
-        assert_eq!(npm_scripts["start"], "test prod");
-        assert_eq!(npm_scripts["build"], "test build");
-        assert_eq!(npm_scripts["preview"], "test preview");
-    }
-
-    #[test]
-    fn extract_composer_scripts() {
-        let path = Path::new("test/__mocks__/_test.toml");
-        let table = TomlTemplate::get_table(path);
-        let parsed_scripts = TomlTemplate::parse_scripts(&table).expect("Error parsing deps");
-
-        assert!(parsed_scripts.contains_key("composer"));
-        let npm_scripts = parsed_scripts
-            .get("composer")
-            .expect("Error getting composer scripts");
 
         assert_eq!(npm_scripts["dev"], "test dev");
         assert_eq!(npm_scripts["start"], "test prod");
