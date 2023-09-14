@@ -220,36 +220,31 @@ impl ProjectBuilder {
         // stack specific commands
         match stack {
             StackTemplate::RSAPI | StackTemplate::TSAPI => {
-                let frontend_command = match self.config.user_options.spa {
-                    true => {
-                        println!("->> Creating Vue/Vite SPA");
-                        let mut command = Command::new("bun");
-                        command.args(&["create", "vue@latest"]);
-                        Some(command)
-                    }
-                    false => match self.config.user_options.template_engine {
-                        true => {
-                            println!("->> installing template engine");
-                            match stack {
-                                StackTemplate::TSAPI => {
-                                    let mut command = Command::new("bun");
-                                    command.args(&["add", "handlebars"]);
-                                    Some(command)
-                                }
-                                StackTemplate::RSAPI => {
-                                    let mut command = Command::new("cargo");
-                                    command.args(&["add", "handlebars"]);
-                                    Some(command)
-                                }
-                                _ => None,
-                            }
+                if self.config.user_options.template_engine {
+                    println!("->> installing template engine");
+                    match stack {
+                        StackTemplate::TSAPI => {
+                            let mut command = Command::new("bun");
+                            command.args(&["add", "handlebars"]);
+                            command.output().expect("Failed to execute command");
                         }
-                        false => None,
-                    },
-                };
-
-                if frontend_command.is_some() {
-                    frontend_command.unwrap().spawn().unwrap().wait().unwrap();
+                        StackTemplate::RSAPI => {
+                            let mut command = Command::new("cargo");
+                            command.args(&["add", "handlebars"]);
+                            command.output().expect("Failed to execute command");
+                        }
+                        _ => (),
+                    }
+                }
+                if self.config.user_options.spa {
+                    println!("->> Creating Vue/Vite SPA");
+                    let mut command = Command::new("bun");
+                    command.args(&["create", "vue@latest"]);
+                    command
+                        .spawn()
+                        .unwrap()
+                        .wait()
+                        .expect("Failed to execute command");
                 }
             }
             _ => (),

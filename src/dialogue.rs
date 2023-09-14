@@ -9,9 +9,9 @@ use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterat
 
 #[derive(Debug, Clone, EnumVariantNames, EnumString, EnumIter, EnumProperty)]
 pub enum StackTemplate {
-    #[strum(props(Label = "TypeScript API, optional frontend"))]
+    #[strum(props(Label = "TypeScript Web App"))]
     TSAPI,
-    #[strum(props(Label = "Rust Web App, optional frontend"))]
+    #[strum(props(Label = "Rust Web App"))]
     RSAPI,
     #[strum(props(Label = "Rust CLI Tool"))]
     RSCLI,
@@ -143,13 +143,10 @@ fn get_frontend(stack: &StackTemplate) -> (bool, bool) {
                 .interact()
                 .expect("Failed to get SPA selection from user");
 
-            let template = match spa {
-                true => false,
-                false => Confirm::with_theme(&ColorfulTheme::default())
-                    .with_prompt("Would you like to use a frontend template engine?")
-                    .interact()
-                    .expect("Failed to get template engine selection from user"),
-            };
+            let template = Confirm::with_theme(&ColorfulTheme::default())
+                .with_prompt("Would you like to use a frontend template engine?")
+                .interact()
+                .expect("Failed to get template engine selection from user");
             return (spa, template);
         }
         _ => return (false, false),
