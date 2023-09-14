@@ -1,5 +1,3 @@
-use dialoguer::{theme::ColorfulTheme, Confirm};
-
 use crate::{config::ScaffoldConfig, dialogue::StackTemplate, file_system, module::Module};
 use std::{
     env,
@@ -221,7 +219,7 @@ impl ProjectBuilder {
         let stack = &self.config.user_options.stack;
         // stack specific commands
         match stack {
-            StackTemplate::RSWEB | StackTemplate::TSAPI => {
+            StackTemplate::RSAPI | StackTemplate::TSAPI => {
                 let frontend_command = match self.config.user_options.spa {
                     true => {
                         println!("->> Creating Vue/Vite SPA");
@@ -238,7 +236,7 @@ impl ProjectBuilder {
                                     command.args(&["add", "handlebars"]);
                                     Some(command)
                                 }
-                                StackTemplate::RSWEB => {
+                                StackTemplate::RSAPI => {
                                     let mut command = Command::new("cargo");
                                     command.args(&["add", "handlebars"]);
                                     Some(command)
@@ -252,17 +250,6 @@ impl ProjectBuilder {
 
                 if frontend_command.is_some() {
                     frontend_command.unwrap().spawn().unwrap().wait().unwrap();
-                }
-            }
-            StackTemplate::TSWEB => {
-                if Confirm::with_theme(&ColorfulTheme::default())
-                    .with_prompt("Would you like to install Playwright?")
-                    .interact()
-                    .expect("Unable to get e2e testing selecion")
-                {
-                    let mut command = Command::new("npm");
-                    command.args(&["init", "playwright@latest"]);
-                    command.spawn().unwrap().wait().unwrap();
                 }
             }
             _ => (),

@@ -7,10 +7,6 @@ name="typescript"
 dev= true
 
 [[deps.npm]]
-name = "vitest"
-dev = true
-
-[[deps.npm]]
 name = "commander"
 
 [[deps.npm]]

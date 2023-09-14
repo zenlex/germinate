@@ -1,5 +1,5 @@
 # General Config
-title = "rsweb"
+title = "rsapi"
 description = "Rust Web App"
 
 # Web Framework

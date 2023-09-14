@@ -9,12 +9,10 @@ use strum::{EnumIter, EnumProperty, EnumString, EnumVariantNames, IntoEnumIterat
 
 #[derive(Debug, Clone, EnumVariantNames, EnumString, EnumIter, EnumProperty)]
 pub enum StackTemplate {
-    #[strum(props(Label = "SSR TypeScript"))]
-    TSWEB,
     #[strum(props(Label = "TypeScript API, optional frontend"))]
     TSAPI,
     #[strum(props(Label = "Rust Web App, optional frontend"))]
-    RSWEB,
+    RSAPI,
     #[strum(props(Label = "Rust CLI Tool"))]
     RSCLI,
     #[strum(props(Label = "TypeScript CLI Tool"))]
@@ -24,8 +22,7 @@ pub enum StackTemplate {
 impl StackTemplate {
     pub fn get_path(&self) -> PathBuf {
         match self {
-            Self::TSWEB => PathBuf::from("templates/tsweb/stack_template.toml"),
-            Self::RSWEB => PathBuf::from("templates/rsweb/stack_template.toml"),
+            Self::RSAPI => PathBuf::from("templates/rsapi/stack_template.toml"),
             Self::TSCLI => PathBuf::from("templates/tscli/stack_template.toml"),
             Self::RSCLI => PathBuf::from("templates/rscli/stack_template.toml"),
             Self::TSAPI => PathBuf::from("templates/tsapi/stack_template.toml"),
@@ -53,7 +50,7 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
     let orm = match &db {
         Some(db) => match db {
             Database::Mongo => match stack {
-                StackTemplate::RSCLI | StackTemplate::RSWEB => false,
+                StackTemplate::RSCLI | StackTemplate::RSAPI => false,
                 _ => get_orm(),
             },
             _ => get_orm(),
@@ -140,7 +137,7 @@ fn get_orm() -> bool {
 
 fn get_frontend(stack: &StackTemplate) -> (bool, bool) {
     match stack {
-        StackTemplate::RSWEB | StackTemplate::TSAPI => {
+        StackTemplate::RSAPI | StackTemplate::TSAPI => {
             let spa = Confirm::with_theme(&ColorfulTheme::default())
                 .with_prompt("Would you like to use a SPA?")
                 .interact()

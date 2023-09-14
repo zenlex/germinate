@@ -25,7 +25,3 @@ name="@hono/client"
 
 [[deps.npm]]
 name="zod"
-
-[[deps.npm]]
-name = "vitest"
-dev = true

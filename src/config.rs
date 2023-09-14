@@ -61,7 +61,7 @@ impl ScaffoldConfig {
         let db_client = match &db {
             Some(db_platform) => match db_platform {
                 Database::Postgres => match options.stack {
-                    StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
+                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
                         true => Some(DbClient::Diesel),
                         false => Some(DbClient::Sqlx),
                     },
@@ -71,7 +71,7 @@ impl ScaffoldConfig {
                     },
                 },
                 Database::Sqlite => match options.stack {
-                    StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
+                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
                         true => Some(DbClient::Diesel),
                         false => Some(DbClient::Sqlx),
                     },
@@ -81,7 +81,7 @@ impl ScaffoldConfig {
                     },
                 },
                 Database::Mongo => match options.stack {
-                    StackTemplate::RSWEB | StackTemplate::RSCLI => match options.orm {
+                    StackTemplate::RSAPI | StackTemplate::RSCLI => match options.orm {
                         true => panic!("No Rust ORM for MongoDB"),
                         false => Some(DbClient::MongoDb),
                     },
@@ -95,15 +95,22 @@ impl ScaffoldConfig {
         };
 
         let languages = match options.stack {
-            StackTemplate::RSWEB => vec![Language::Rust],
+            StackTemplate::RSAPI => vec![Language::Rust],
             StackTemplate::RSCLI => vec![Language::Rust],
             _ => vec![Language::TypeScript, Language::JavaScript],
         };
 
         let linters = match options.stack {
-            StackTemplate::TSWEB => vec![Linter::ESLint, Linter::Stylelint],
-            StackTemplate::TSAPI | StackTemplate::TSCLI => vec![Linter::ESLint],
-            StackTemplate::RSCLI | StackTemplate::RSWEB => {
+            StackTemplate::TSCLI => vec![Linter::ESLint],
+            StackTemplate::TSAPI => match options.spa {
+                true => {
+                    vec![Linter::ESLint, Linter::Stylelint]
+                }
+                false => {
+                    vec![Linter::ESLint]
+                }
+            },
+            StackTemplate::RSCLI | StackTemplate::RSAPI => {
                 vec![Linter::Clippy]
             }
         };
