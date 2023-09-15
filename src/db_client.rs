@@ -25,18 +25,18 @@ impl DbClient {
         match self {
             DbClient::Diesel => {
                 let mut command = Command::new("cargo");
-                command.arg("add").arg("diesel");
+                command.args(&["add", "diesel"]);
 
                 match db {
-                    Database::Postgres => command.arg("--features").arg("postgres"),
-                    Database::Sqlite => command.arg("--features").arg("sqlite"),
+                    Database::Postgres => command.args(&["--features", "postgres"]),
+                    Database::Sqlite => command.args(&["--features", "sqlite"]),
                     Database::Mongo => &mut command,
                 };
                 vec![command]
             }
             DbClient::Sqlx => {
                 let mut command = Command::new("cargo");
-                command.arg("add").arg("sqlx");
+                command.args(&["add", "sqlx"]);
 
                 let mut features = String::from("runtime-tokio,tls-native-tls");
 
@@ -56,17 +56,17 @@ impl DbClient {
             }
             DbClient::Prisma => {
                 let mut command = Command::new("bun");
-                command.arg("add").arg("prisma").arg("--dev");
+                command.args(&["add", "prisma", "--dev"]);
 
                 let init_command = Command::new("bunx");
-                command.arg("prisma").arg("init");
+                command.args(&["prisma", "init"]);
 
                 vec![command, init_command]
             }
             DbClient::Slonik => {
                 if let Database::Postgres = db {
                     let mut command = Command::new("bun");
-                    command.arg("add").arg("slonik").arg("--dev");
+                    command.args(&["add", "slonik", "--dev"]);
                     vec![command]
                 } else {
                     panic!("No Slonik support for non-Postgres databases")
@@ -74,23 +74,23 @@ impl DbClient {
             }
             DbClient::BetterSqlite => {
                 let mut command = Command::new("bun");
-                command.arg("add").arg("better-sqlite3");
+                command.args(&["add", "better-sqlite3"]);
                 vec![command]
             }
             DbClient::MongoDb => {
                 if config.has_language(&Language::Rust) {
                     let mut command = Command::new("cargo");
-                    command.arg("add").arg("mongodb");
+                    command.args(&["add", "mongodb"]);
                     vec![command]
                 } else {
                     let mut command = Command::new("bun");
-                    command.arg("add").arg("mongodb");
+                    command.args(&["add", "mongodb"]);
                     vec![command]
                 }
             }
             DbClient::Mongoose => {
                 let mut command = Command::new("bun");
-                command.arg("add").arg("mongoose");
+                command.args(&["add", "mongoose"]);
                 vec![command]
             }
         }

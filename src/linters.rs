@@ -12,12 +12,12 @@ impl Linter {
         match self {
             Linter::ESLint => {
                 let mut command = Command::new("bun");
-                command.arg("add").arg("eslint").arg("--dev");
+                command.args(&["add", "eslint", "--dev"]);
                 vec![command]
             }
             Linter::Stylelint => {
                 let mut command = Command::new("bun");
-                command.arg("add").arg("stylelint").arg("--dev");
+                command.args(&["add", "stylelint", "--dev"]);
                 vec![command]
             }
             Linter::Clippy => {
@@ -28,7 +28,7 @@ impl Linter {
                 commands.push(command);
 
                 let mut command = Command::new("rustup");
-                command.arg("component").arg("add").arg("clippy");
+                command.args(&["component", "add", "clippy"]);
                 commands.push(command);
 
                 commands

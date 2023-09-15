@@ -179,8 +179,7 @@ impl ProjectBuilder {
             for (name, script) in npm_scripts {
                 let mut command = Command::new("npm");
                 command
-                    .arg("pkg")
-                    .arg("set")
+                    .args(&["pkg", "set"])
                     .arg(format!("scripts.{}={}", name, script));
                 println!("Running command: {:?}", command);
                 let output = command.output().expect("Failed to execute command");
