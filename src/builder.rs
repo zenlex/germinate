@@ -21,12 +21,10 @@ impl ProjectBuilder {
         self.make_folders();
         std::env::set_current_dir(&self.config.root_dir).expect("Failed to set current directory");
 
-        // Copy templates and manifests
-        let _ = self.pre_install_commands();
+        self.pre_install_commands()
+            .expect("Failed to run pre-install commands");
 
-        let install_commands = self.get_install_commands();
-
-        for mut command in install_commands {
+        for mut command in self.get_install_commands() {
             println!("Running command: {:?}", command);
             let output = command.output().expect("Failed to execute command");
             println!("->> STDOUT: {}", String::from_utf8_lossy(&output.stdout));
@@ -34,8 +32,8 @@ impl ProjectBuilder {
         }
 
         self.set_npm_scripts();
-
         self.post_install_commands();
+
         //TODO? Can set custom cargo scripts or makefiles if needed down the road
         // self.set_cargo_scripts();
 
