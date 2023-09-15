@@ -88,6 +88,10 @@ impl ProjectBuilder {
             let mut npm_init = Command::new("bun");
             npm_init.args(&["init", "-y"]);
             commands.push(npm_init);
+
+            let mut package_name = Command::new("npm");
+            package_name.args(&["pkg", "set", "name", &self.config.user_options.app_name]);
+            commands.push(package_name);
         }
 
         commands
