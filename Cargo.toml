@@ -13,4 +13,5 @@ indicatif = "0.17.5"
 slug = "0.1.4"
 strum = { version = "0.24.1", features = ["derive", "strum_macros"] }
 toml = "0.7.6"
-serde = "1.0.170"
+serde = { version = "1.0.170", features = ["derive"] }
+handlebars = "4.4.0"
