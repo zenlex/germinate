@@ -14,8 +14,7 @@ use crate::{builder::ProjectBuilder, config::ScaffoldConfig};
 fn main() {
     let user_config = dialogue::get_user_config().unwrap();
     let app_config = ScaffoldConfig::new(user_config);
-    let builder = ProjectBuilder::new(app_config);
-    builder.build();
+    ProjectBuilder::build(&app_config);
     //?  Can we parallelize it? (future optimization, but keep thinks modularized with a mind towards this end)
 
     // return success/errors
