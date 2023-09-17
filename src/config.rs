@@ -43,7 +43,13 @@ impl ScaffoldConfig {
     pub fn new(options: UserOptions) -> Self {
         let title = options.app_name.clone();
         let root_dir = PathBuf::from(&options.output_dir);
-        let toml = TomlTemplate::new(&options.stack.get_path());
+        let template_dir = env::current_exe()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join(options.stack.get_path().parent().unwrap());
+
+        let toml = TomlTemplate::new(&template_dir.join("stack_template.toml"));
         let subfolders = toml.get_subfolders().cloned();
         let dependencies = toml.get_dependencies();
         let scripts = match toml.get_scripts() {
@@ -130,11 +136,7 @@ impl ScaffoldConfig {
             subfolders,
             containers: options.containers,
             user_options: options.clone(),
-            template_dir: env::current_exe()
-                .unwrap()
-                .parent()
-                .unwrap()
-                .join(options.stack.get_path().parent().unwrap()),
+            template_dir,
         }
     }
 

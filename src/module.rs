@@ -2,11 +2,11 @@ use std::process::Command;
 
 #[derive(Debug, Clone)]
 pub struct Module {
-    name: String,
-    version: String,
-    dev: bool,
-    features: Option<Vec<String>>,
-    then: Option<ThenCommands>,
+    pub name: String,
+    pub version: String,
+    pub dev: bool,
+    pub features: Option<Vec<String>>,
+    pub then: Option<ThenCommands>,
 }
 
 pub type ThenCommands = Vec<Vec<String>>;
@@ -27,26 +27,6 @@ impl Module {
             then,
         }
     }
-
-    pub fn get_name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn get_version(&self) -> &str {
-        &self.version
-    }
-
-    pub fn is_dev(&self) -> bool {
-        self.dev
-    }
-
-    pub fn get_features(&self) -> Option<&Vec<String>> {
-        self.features.as_ref()
-    }
-
-    pub fn get_then(&self) -> Option<&ThenCommands> {
-        self.then.as_ref()
-    }
 }
 
 pub fn get_npm_cmds(npm_modules: &Vec<Module>) -> Vec<Command> {
@@ -55,20 +35,20 @@ pub fn get_npm_cmds(npm_modules: &Vec<Module>) -> Vec<Command> {
         let mut command = Command::new("bun");
         command.arg("add");
 
-        if module.get_version() != "latest" {
-            command.arg(format!("{}@{}", module.get_name(), module.get_version()));
+        if module.version != "latest" {
+            command.arg(format!("{}@{}", module.name, module.version));
         } else {
-            command.arg(module.get_name());
+            command.arg(&module.name);
         }
 
-        if module.is_dev() {
+        if module.dev {
             command.arg("--dev");
         }
 
         commands.push(command);
 
-        if let Some(then_commands) = module.get_then() {
-            commands.append(&mut generate_then_cmds(then_commands));
+        if let Some(then_commands) = &module.then {
+            commands.append(&mut generate_then_cmds(&then_commands));
         }
     }
 
@@ -82,24 +62,24 @@ pub fn get_cargo_cmds(cargo_modules: &Vec<Module>) -> Vec<Command> {
         command.env("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
         command.arg("add");
 
-        if module.get_version() != "latest" {
-            command.arg(format!("{}@{}", module.get_name(), module.get_version()));
+        if module.version != "latest" {
+            command.arg(format!("{}@{}", module.name, module.version));
         } else {
-            command.arg(module.get_name());
+            command.arg(&module.name);
         }
 
-        if module.is_dev() {
+        if module.dev {
             command.arg("--dev");
         }
 
-        if let Some(features) = module.get_features() {
+        if let Some(features) = &module.features {
             command.arg("--features");
             command.arg(features.join(","));
         }
 
         commands.push(command);
 
-        if let Some(then_commands) = module.get_then() {
+        if let Some(then_commands) = &module.then {
             commands.append(&mut generate_then_cmds(then_commands))
         }
     }

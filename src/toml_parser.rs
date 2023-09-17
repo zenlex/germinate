@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    env::current_exe,
     fs,
     path::{Path, PathBuf},
 };
@@ -209,13 +208,8 @@ impl TomlTemplate {
 
     //TODO? this requires templates folder to live in the same directory as the binary, could add a config/cli flag
     fn get_table(path: &Path) -> Table {
-        let template_path = current_exe()
-            .unwrap()
-            .parent()
-            .unwrap()
-            .to_path_buf()
-            .join(path);
-        let template_str = fs::read_to_string(template_path).expect("Error reading file");
+        let template_str =
+            fs::read_to_string(path).expect(&format!("Error reading file: {}", path.display()));
         let table = template_str.parse::<Table>().expect("Error parsing toml");
         table
     }
@@ -262,21 +256,19 @@ pub mod tests {
         assert!(parsed_deps.contains_key("npm"));
 
         let npm_deps = &parsed_deps["npm"].as_ref().unwrap();
+        assert!(npm_deps.iter().any(|dep| dep.name == "test_npm_dep_min"));
         assert!(npm_deps
             .iter()
-            .any(|dep| dep.get_name() == "test_npm_dep_min"));
-        assert!(npm_deps
-            .iter()
-            .any(|dep| dep.get_name() == "test_npm_dev_dep_full"));
+            .any(|dep| dep.name == "test_npm_dev_dep_full"));
 
         let full_dev_dep = npm_deps
             .iter()
-            .find(|dep| dep.get_name() == "test_npm_dev_dep_full")
+            .find(|dep| dep.name == "test_npm_dev_dep_full")
             .expect("Error finding dep");
-        assert_eq!(full_dev_dep.get_version(), "^1.0.0");
-        assert_eq!(full_dev_dep.is_dev(), true);
+        assert_eq!(full_dev_dep.version, "^1.0.0");
+        assert_eq!(full_dev_dep.dev, true);
 
-        let then_cmds = full_dev_dep.get_then().expect("Error getting then cmds");
+        let then_cmds = full_dev_dep.then.as_ref().expect("Error getting then cmds");
         assert_eq!(then_cmds.len(), 2);
         assert_eq!(then_cmds[0].len(), 1);
         assert_eq!(then_cmds[1].len(), 3);
@@ -295,19 +287,19 @@ pub mod tests {
         let cargo_deps = &parsed_deps["cargo"].as_ref().unwrap();
         assert!(cargo_deps
             .iter()
-            .any(|dep| dep.get_name() == "test_cargo_dep_min"));
+            .any(|dep| dep.name == "test_cargo_dep_min"));
         assert!(cargo_deps
             .iter()
-            .any(|dep| dep.get_name() == "test_cargo_dev_dep_full"));
+            .any(|dep| dep.name == "test_cargo_dev_dep_full"));
 
         let full_dev_dep = cargo_deps
             .iter()
-            .find(|dep| dep.get_name() == "test_cargo_dev_dep_full")
+            .find(|dep| dep.name == "test_cargo_dev_dep_full")
             .expect("Error finding dep");
-        assert_eq!(full_dev_dep.get_version(), "^1.0.0");
-        assert_eq!(full_dev_dep.is_dev(), true);
+        assert_eq!(full_dev_dep.version, "^1.0.0");
+        assert_eq!(full_dev_dep.dev, true);
 
-        let then_cmds = full_dev_dep.get_then().expect("Error getting then cmds");
+        let then_cmds = full_dev_dep.then.as_ref().expect("Error getting then cmds");
         assert_eq!(then_cmds.len(), 2);
         assert_eq!(then_cmds[0].len(), 1);
         assert_eq!(then_cmds[1].len(), 3);
