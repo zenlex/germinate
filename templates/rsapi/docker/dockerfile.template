@@ -1,7 +1,21 @@
-FROM rust:latest 
+FROM rust:1-slim-bookworm as build
 
-COPY ./ ./
+RUN USER=root cargo new --bin {{ app_name }}
+WORKDIR /{{ app_name }}
+
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
 
 RUN cargo build --release
+RUN rm src/*.rs
 
-CMD ["./target/release/{{ app_name }}"]
+COPY ./src ./src
+
+RUN rm ./target/release/deps/{{ deps_name }}*
+RUN cargo build --release
+
+FROM debian:bookworm-slim
+
+COPY --from=build /{{ app_name }}/target/release/{{ app_name }} /usr/src/
+
+CMD ["/usr/src/{{ app_name }}"]

@@ -316,18 +316,23 @@ impl Debug for ProjectBuilder {
 #[derive(Serialize, Deserialize, Debug)]
 struct DockerVariables {
     app_name: String,
+    deps_name: String,
 }
 
 impl DockerVariables {
     pub fn new() -> Self {
+        let kebab_name = env::current_dir()
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+
+        let snake_name = kebab_name.replace("-", "_");
         Self {
-            app_name: env::current_dir()
-                .unwrap()
-                .file_name()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string(),
+            app_name: kebab_name,
+            deps_name: snake_name,
         }
     }
 }
