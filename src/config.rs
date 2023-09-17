@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf, vec};
+use std::{collections::HashMap, env, path::PathBuf, vec};
 
 use crate::{
     db_client::DbClient,
@@ -26,6 +26,7 @@ pub struct ScaffoldConfig {
     pub user_options: UserOptions,
     pub title: String,
     pub root_dir: PathBuf,
+    pub template_dir: PathBuf,
     pub languages: Vec<Language>,
     pub db: Option<Database>,
     pub db_client: Option<DbClient>,
@@ -128,7 +129,12 @@ impl ScaffoldConfig {
             cargo_deps,
             subfolders,
             containers: options.containers,
-            user_options: options,
+            user_options: options.clone(),
+            template_dir: env::current_exe()
+                .unwrap()
+                .parent()
+                .unwrap()
+                .join(options.stack.get_path().parent().unwrap()),
         }
     }
 

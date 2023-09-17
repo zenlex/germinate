@@ -1,10 +1,12 @@
 mod builder;
 mod config;
+mod container;
 mod db_client;
 mod dialogue;
 mod file_system;
 mod linters;
 mod module;
+mod template_generator;
 mod toml_parser;
 
 use crate::{builder::ProjectBuilder, config::ScaffoldConfig};

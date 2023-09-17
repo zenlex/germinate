@@ -1,15 +1,14 @@
-use crate::{config::ScaffoldConfig, dialogue::StackTemplate, file_system, module::Module};
+use crate::{
+    config::ScaffoldConfig, container::ContainerBuilder, dialogue::StackTemplate, file_system,
+    module::Module,
+};
 use std::{
     env,
     fmt::{self, Debug, Formatter},
-    fs,
     path::PathBuf,
     process::Command,
     vec,
 };
-
-use handlebars::Handlebars;
-use serde::{Deserialize, Serialize};
 
 pub struct ProjectBuilder {
     config: ScaffoldConfig,
@@ -36,7 +35,7 @@ impl ProjectBuilder {
         }
 
         if self.config.containers {
-            self.copy_docker_files();
+            ContainerBuilder::new(&self.config).build();
         }
 
         self.set_npm_scripts();
@@ -266,36 +265,6 @@ impl ProjectBuilder {
             .expect("unable to copy dir");
     }
 
-    fn copy_docker_files(&self) {
-        self.generate_dockerfile();
-        println!("Copying Docker files...");
-        let pre_install_path = self.template_dir().join("docker");
-        file_system::copy_dir_all(pre_install_path, env::current_dir().unwrap())
-            .expect("unable to copy dir");
-
-        println!("Removing templates...");
-        fs::remove_file("dockerfile.template").expect("Failed to remove dockerfile template");
-    }
-
-    fn generate_dockerfile(&self) {
-        println!("Generating Docker files...");
-
-        let hb = Handlebars::new();
-        hb.render_template_to_write(
-            fs::read_to_string(
-                &self
-                    .template_dir()
-                    .join("docker")
-                    .join("dockerfile.template"),
-            )
-            .unwrap()
-            .as_str(),
-            &DockerVariables::new(),
-            &mut fs::File::create("Dockerfile").unwrap(),
-        )
-        .expect("Failed to render dockerfile template");
-    }
-
     fn template_dir(&self) -> PathBuf {
         env::current_exe()
             .unwrap()
@@ -310,29 +279,5 @@ impl Debug for ProjectBuilder {
         f.debug_struct("Project Builder")
             .field("config", &self.config)
             .finish()
-    }
-}
-//
-#[derive(Serialize, Deserialize, Debug)]
-struct DockerVariables {
-    app_name: String,
-    deps_name: String,
-}
-
-impl DockerVariables {
-    pub fn new() -> Self {
-        let kebab_name = env::current_dir()
-            .unwrap()
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string();
-
-        let snake_name = kebab_name.replace("-", "_");
-        Self {
-            app_name: kebab_name,
-            deps_name: snake_name,
-        }
     }
 }
