@@ -1,6 +1,10 @@
 FROM rust:1-slim-bookworm as build
 
-RUN USER=root cargo new --bin {{ app_name }}
+RUN apt-get update && apt-get install -y \
+		libssl-dev \
+		pkg-config 
+
+RUN cargo new --bin {{ app_name }}
 WORKDIR /{{ app_name }}
 
 COPY ./Cargo.lock ./Cargo.lock
@@ -15,7 +19,10 @@ RUN rm ./target/release/deps/{{ deps_name }}*
 RUN cargo build --release
 
 FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y \
+		libssl-dev \
+		pkg-config 
 
 COPY --from=build /{{ app_name }}/target/release/{{ app_name }} /usr/src/
 
-CMD ["/usr/src/{{ app_name }}"]
+ENTRYPOINT ["/usr/src/{{ app_name }}"]

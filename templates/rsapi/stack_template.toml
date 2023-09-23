@@ -5,3 +5,7 @@ description = "Rust Web App"
 # Web Framework
 [[deps.cargo]]
 name = "axum"
+
+[[deps.cargo]]
+name = "tokio" 
+features = ["macros", "rt-multi-thread"] 

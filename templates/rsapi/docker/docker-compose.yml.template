@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+#container for rust web server
+  web:
+    build: .
+    command: /usr/src/{{ app_name }}
+    volumes:
+      - ./target/release:/usr/src
+    ports:
+      - 3000:3000
+    
+{{#if postgres }}
+    depends_on:
+      - db
+      - db_test
+{{/if}}
+
+
+{{#if postgres}}
+# container for postgres database
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: dbuser
+      POSTGRES_DB: database
+    ports:
+      - 5432:5432
+    volumes:
+      - /database
+
+# container for postgres test database
+  db_test:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: dbuser
+      POSTGRES_DB: database_test
+    ports:
+      - 5433:5432
+    volumes:
+      - /test_database
+
+{{/if}}
