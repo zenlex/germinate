@@ -1,0 +1,22 @@
+FROM rust:1-slim-bookworm as build
+
+RUN apt-get update && apt-get install -y \
+		libssl-dev \
+		pkg-config 
+
+RUN cargo new --bin app
+WORKDIR /app
+
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
+
+RUN cargo build 
+RUN cargo install cargo-watch
+RUN rm src/*.rs
+
+COPY ./src ./src
+
+WORKDIR /
+COPY ./docker/app/rootfs /
+
+ENTRYPOINT ["sh", "/etc/entrypoint.dev.sh"]

@@ -23,6 +23,10 @@ RUN apt-get update && apt-get install -y \
 		libssl-dev \
 		pkg-config 
 
-COPY --from=build /{{ app_name }}/target/release/{{ app_name }} /usr/src/
+WORKDIR /app
+COPY --from=build /{{ app_name }}/target/release/{{ app_name }} ./
 
-ENTRYPOINT ["/usr/src/{{ app_name }}"]
+WORKDIR /
+COPY ./docker/app/rootfs /
+
+ENTRYPOINT ["sh", "/etc/entrypoint.sh"]

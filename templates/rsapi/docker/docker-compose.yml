@@ -3,12 +3,15 @@ version: '3'
 services:
 #container for rust web server
   web:
-    build: .
-    command: /usr/src/{{ app_name }}
-    volumes:
-      - ./target/release:/usr/src
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile.dev
+    restart: unless-stopped
     ports:
       - 3000:3000
+    volumes:
+      - ./:/app
+    container_name: {{ app_name }}_rs_web_server
     
 {{#if postgres }}
     depends_on:
