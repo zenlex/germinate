@@ -57,7 +57,11 @@ pub fn get_user_config() -> Result<UserOptions, std::io::Error> {
         },
         None => false,
     };
-    let containers = containers_prompt();
+
+    let containers = match stack {
+        StackTemplate::RSAPI | StackTemplate::TSAPI => containers_prompt(),
+        _ => false,
+    };
 
     let user_config = UserOptions {
         app_name,
