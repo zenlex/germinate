@@ -93,6 +93,8 @@ fn post_install_commands(config: &ScaffoldConfig) -> Result<()> {
         set_npm_scripts(npm_scripts);
     }
 
+    create_repo();
+
     Ok(())
 }
 
@@ -175,4 +177,24 @@ fn generate_linter_cmds(linters: &Vec<Linter>) -> Vec<Command> {
         commands.append(&mut linter.get_install_commands());
     }
     commands
+}
+
+fn create_repo() {
+    println!("Creating git repo...");
+    let mut command = Command::new("git");
+    command.args(&["init"]);
+    command.output().expect("Failed to create git repo");
+
+    let mut command = Command::new("git");
+    command.args(&["checkout", "-b", "main"]);
+    command.output().expect("Failed to create main branch");
+
+    println!("Creating initial commit...");
+    let mut command = Command::new("git");
+    command.args(&["add", "."]);
+    command.output().expect("Failed to add files to git repo");
+
+    let mut command = Command::new("git");
+    command.args(&["commit", "-m", "Initial commit"]);
+    command.output().expect("Failed to create initial commit");
 }
