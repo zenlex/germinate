@@ -73,6 +73,13 @@ fn post_install_commands(config: &ScaffoldConfig) -> Result<()> {
     }
 
     // general commands
+    println!("->> Removing boilerplate files...");
+    match stack {
+        StackTemplate::TSAPI | StackTemplate::TSCLI => {
+            std::fs::remove_file("index.ts").ok();
+        }
+        _ => {}
+    }
     println!("->> Copying Post-install templates...");
     let post_install_path = config.template_dir.join("after_install");
     file_system::copy_dir_all(post_install_path, env::current_dir().unwrap())

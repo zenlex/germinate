@@ -7,7 +7,7 @@ src = {}
 
 # Scripts
 [scripts.npm]
-start = "bun run index.ts"
+start = "bun run src/index.ts"
 dev = "bun run --hot src/index.ts"
 
 # Dependencies

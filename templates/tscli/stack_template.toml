@@ -2,6 +2,12 @@
 title = "tscli"
 description = "TypeScript Node CLI Tool"
 
+# Scripts
+[scripts.npm]
+start = "bun run src/index.ts"
+dev = "bun run --hot src/index.ts"
+
+# Dependencies
 [[deps.npm]]
 name="typescript"
 dev= true
