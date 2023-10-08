@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "strict": true,
-    "jsx": "react-jsx",
-    "jsxFragmentFactory": "Fragment",
-    "jsxImportSource": "hono/jsx"
-  }
-}
