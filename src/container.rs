@@ -23,7 +23,10 @@ impl ContainerBuilder {
 pub struct DockerVariables {
     app_name: String,
     deps_name: String, // the app name prefix of the generated deps files to remove in prod for containers
+    database: bool,
     postgres: bool,
+    mongo: bool,
+    sqlite: bool,
 }
 
 impl crate::template_generator::TemplateData for DockerVariables {}
@@ -42,9 +45,12 @@ impl DockerVariables {
         Self {
             app_name: kebab_name,
             deps_name: snake_name,
+            database: db.is_some(),
             postgres: db
                 .as_ref()
                 .is_some_and(|db| matches!(db, Database::Postgres)),
+            mongo: db.as_ref().is_some_and(|db| matches!(db, Database::Mongo)),
+            sqlite: db.as_ref().is_some_and(|db| matches!(db, Database::Sqlite)),
         }
     }
 }

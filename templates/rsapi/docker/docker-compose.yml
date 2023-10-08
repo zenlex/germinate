@@ -13,12 +13,11 @@ services:
       - ./:/app
     container_name: {{ app_name }}_rs_web_server
     
-{{#if postgres }}
+{{#if database}}
     depends_on:
       - db
       - db_test
 {{/if}}
-
 
 {{#if postgres}}
 # container for postgres database
@@ -32,7 +31,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - /database
+      - database:/var/lib/postgresql/data
 
 # container for postgres test database
   db_test:
@@ -45,6 +44,57 @@ services:
     ports:
       - 5433:5432
     volumes:
-      - /test_database
+      - database_test:/var/lib/postgresql/data
+{{/if}}
 
+{{#if mongo}}
+#container for mongo database
+  db:
+    image: mongo:4.4.6
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27017:27017
+    volumes:
+      - database:/data/db
+
+#container for mongo test database
+  db_test:
+    image: mongo:4.4.6
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27018:27017
+    volumes:
+      - database_test:/data/db
+{{/if}}
+
+{{#if sqlite}}
+#container for sqlite database
+  db:
+    image: keinos/sqlite3:latest
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - database:/db
+
+#container for sqlite test database
+  db_test:
+    image: keinos/sqlite3:latest
+    restart: always
+    ports:
+      - 5433:5432
+    volumes:
+      - database_test:/db
+{{/if}}
+
+{{#if database}}
+volumes:
+  database:
+  test_database:
 {{/if}}
