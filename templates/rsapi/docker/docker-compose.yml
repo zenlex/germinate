@@ -96,5 +96,5 @@ services:
 {{#if database}}
 volumes:
   database:
-  test_database:
+  database_test:
 {{/if}}
