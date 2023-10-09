@@ -9,3 +9,6 @@ name = "axum"
 [[deps.cargo]]
 name = "tokio" 
 features = ["macros", "rt-multi-thread"] 
+
+[[deps.cargo]]
+name = "serde"
