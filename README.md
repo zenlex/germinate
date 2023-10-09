@@ -51,7 +51,7 @@ Germinate is built around stacks I use personally, but with decent foundations f
 - TSAPI - Bun + Hono + Zod - Typesafe, minimal, fast, and built for the edges
 - RSCLI + TSCLI - Rust and TS CLI tool setups with useful tools for command line interaction
 
-_these stacks can be modified by [changing their `stack_template.toml` files_](#customization)
+_these stacks can be modified by [changing their `stack_template.toml` files]_(#customization)
 ### Frontend
 - Rust and Typescript API stacks include option to add templating (via Handlebars) or a Vue SPA with Vite. 
 
