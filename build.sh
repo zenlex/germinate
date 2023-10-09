@@ -1,5 +1,5 @@
 # /germinate/templates wll be created at this path
-TEMPLATE_PATH=~/clitools
+GERMINATE_PATH=~/clitools/germinate
 
 # use debug for development, release for production
 BUILD=debug # options: debug, release
@@ -14,9 +14,9 @@ fi
 
 echo "Building germinate in $BUILD mode" 
 
-echo "Removing old files from $TEMPLATE_PATH/germinate"
-rm -rf ${TEMPLATE_PATH}/germinate/templates 
+echo "Removing old files from $GERMINATE_PATH"
+rm -rf ${GERMINATE_PATH}/templates 
 
-echo "Copying new files to $TEMPLATE_PATH/germinate"	
-cp -p target/debug/germinate ${TEMPLATE_PATH}/germinate 
-cp -rf templates ${TEMPLATE_PATH}/germinate
+echo "Copying new files to $GERMINATE_PATH"	
+cp -p target/debug/germinate ${GERMINATE_PATH}
+cp -rf templates ${GERMINATE_PATH}
