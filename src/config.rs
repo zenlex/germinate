@@ -109,7 +109,7 @@ impl ScaffoldConfig {
 
         let linters = match options.stack {
             StackTemplate::TSCLI => vec![Linter::ESLint],
-            StackTemplate::TSAPI => match options.spa {
+            StackTemplate::TSAPI => match options.spa || options.template_engine {
                 true => {
                     vec![Linter::ESLint, Linter::Stylelint]
                 }
