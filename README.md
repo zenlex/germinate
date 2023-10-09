@@ -7,7 +7,7 @@
  --\@/germinate\@/--
 ```
 
-A project launchpad to accelerate going from idea to first line of code. 
+A launchpad for accelerating from idea ----->>> code. 
 
 ## Table of Contents
 - [Description](#description)
@@ -26,16 +26,12 @@ A project launchpad to accelerate going from idea to first line of code.
 - [Future Plans](#future-development-plans)
 
 ## Description
-Mostly an excuse to learn Rust better by building something I might actually use. 
-My hope is that it will encourage more rapid prototyping of ideas by lowering the startup workload, but with more flexibility than just using starter repos. Especially for smaller personal projects. 
+This project is mostly an excuse to learn Rust better by building something I might actually use. My other intent was to narrow some tooling choices and iterate on stacks I personally enjoy to 'dial them in' without having to remember that one package I liked for that one thing on that one project.  
 
-Currently prototyping around stacks I use personally, but building with a mind towards future extensibility. 
+My hope is that it will encourage more rapid prototyping of ideas by lowering the startup workload, but with more flexibility than just using starter repos. 
 
-Most components of a stack will be configurable via a simple TOML file and templates will be able to be included for any manifests, config files, Dockerfiles, etc. for that stack
+Germinate is built around stacks I use personally, but with decent foundations for extensibility. 
 
-The components common across multiple stacks (databases, linters, formatters, etc) will be configured via CLI dialogue and installed along with the other project dependencies. 
-
-I am currently dogfooding the first iteration to triage improvements. 
 ## Usage 
 - `cd` into parent folder for new project
 - run `germinate` (if not in PATH, use full path to binary)
@@ -50,21 +46,22 @@ I am currently dogfooding the first iteration to triage improvements.
 - Rust CLI tool
 - TypeScript CLI tool
 
-### Notes on Stacks _(Mostly changeable via stack_template.toml files)_ 
+### Notes on Stacks 
 - RSAPI - Minimal Axum Web framework with tokio runtime and tower for http
 - TSAPI - Bun + Hono + Zod - Typesafe, minimal, fast, and built for the edges
 - RSCLI + TSCLI - Rust and TS CLI tool setups with useful tools for command line interaction
 
+_these stacks can be modified by [changing their `stack_template.toml` files_](#customization)
 ### Frontend
-- Rust and Typescript API stacks include option to add templating (currently with Handlebars for both) or a Vue SPA with Vite. 
+- Rust and Typescript API stacks include option to add templating (via Handlebars) or a Vue SPA with Vite. 
 
 ### Database
 All 4 stacks offer DB client options. Currently supported:
-- Postgres (Rust - sqlx or Diesel ORM, TS - Slonik or Prisma ORM)
-- Sqlite (Rust - sqlx or Diesel ORM, TS - Better sqlite3 )
+- Postgres (Rust - sqlx or Diesel ORM, TypeScript - Slonik or Prisma ORM)
+- Sqlite (Rust - sqlx or Diesel ORM, TypeScript - Better sqlite3 )
 - MongoDB (Rust - mongodb driver(no ORM option), TS - mongodb or Mongoose ODM)
 
-*Note - selecting a database does not install the database platform, only the client/driver unless you select [Docker containers in the options](#containers)
+*Note - selecting a database does not install the database platform, only the client unless you select [Docker containers in the options](#containers)
 
 ### Linting
 - All JS/TS stacks come with ESLint installed and StyleLint if a frontend is enabled
@@ -72,32 +69,28 @@ All 4 stacks offer DB client options. Currently supported:
 
 ### Testing
 - All JS/TS stacks are currently built with bun which has a native test runner out of the box. Rust also has native test running support via `cargo test`.  
-- The optional SPAs for the web stacks both leverage vite/vue's create flow where you can select additional front end testing options (Vitest + Playwright recommended)
+- The optional SPAs for the web stacks both leverage Vite/Vue's create flow where you can select additional front end testing options (Vitest + Playwright recommended)
 
 ### Formatting
-- ESLint is recommended as the formatter for the TS stacks in your IDE of choice
-- rustfmt is native to the Rust ecosystem and the recommended choice for the RS stacks. 
+- ESLint is installed for the TypeScript stacks and can be selected as the formatter in your IDE of choice.
+- rustfmt is native to the Rust ecosystem and the recommended choice for the Rust stacks. 
 
-<a name=#containers></a>
 ### Containers (Web stacks only) 
-- Selecting 'Yes' to the containers option for the web stacks will copy the `/docker` folder from `GERMINATE_PATH/templates/{stack}/` to the project folder after injecting config variables via the `handlebars` crate into the docker templates. 
-- Result
-  - A `docker-compose.yml` with services for:
-    - `web` (the main app), 
-    - `frontend` (spa option only) running the Vue/Vite app
-    - `db` and `db_test` services for the selected database 
-    - `database` and `database_test` docker volumes for dev data persistence
-  - Dockerfiles and entrypoint scripts as starting points for dev and prod builds
+- Selecting 'Yes' for the containers option with a web stack will copy the `/docker` folder from `GERMINATE_PATH/templates/{stack}/` to the project folder after injecting config variables.
+
+This will result in:
+- A `docker-compose.yml` with services for:
+  - `web` (the main app), 
+  - `frontend` (spa option only) running the Vue/Vite app
+  - `db` and `db_test` services for the selected database 
+  - `database` and `database_test` docker volumes for persistence 
+  - Dockerfiles and entrypoint scripts as starting points for dev and production builds
 
 ### Source Control 
 - A git repositiory is automatically initialized at the project root and an initial commit made post project setup. `.gitignore` files can also be customized in the `templates` folders. 
 
-### Additional Template files
-You may add files to your `templates/[stack]/` folder to be included on new projects. 
-- Any folders/files in the `before_install` subfolder for a stack are copied to the new project folder prior to running the dependency install commands. 
-- Any folders/files in the `after_install` subfolder for a stack are copied to the new project folder after running the dependency install commands. 
 
-### Customization
+## Customization
 - All customizable config options for a stack are located in `templates/{stack}/stack_template.toml`
 - Currently adding stacks or core platforms/tools (db, linter, formatter, package manager, etc.) is not supported. 
 - You may describe a folder structure you'd like created within the root project folder using the `subfolders` key in the `stack_template.toml`
@@ -114,6 +107,11 @@ version = "1.0" (optional - defaults to 'latest' if not provided)
 then = [["commandA", "arg1", "arg2"], ["commandB", "arg1", "arg2"]] (optional - these will be run after the install command for the package)
 ```
 
+### Additional Template files
+You may add files to your `templates/[stack]/` folder to be included on new projects. 
+- Any folders/files in the `before_install` subfolder for a stack are copied to the new project folder prior to running the dependency install commands. 
+- Any folders/files in the `after_install` subfolder for a stack are copied to the new project folder after running the dependency install commands. 
+
 ## Installation
 _(Installer / docker image coming some day...)_
 
@@ -125,7 +123,7 @@ _(Installer / docker image coming some day...)_
   - if `BUILD=release` then cargo will build a release binary - you should use this if you don't plan on modifying the code.
   - *Make sure to add your `GERMINATE_PATH` location to your system PATH if you want to be able to call it from any parent folder* 
 
-### _Manual Build_
+### Manual Build
 - Run `cargo build` for a dev build or `cargo build --release` for a productio build if you're not planning to modify the app. 
 
 - place the built binary from `/target/(release|debug)/germinate` wherever you'd like on your system, and copy the `/templates` folder to the same loation as the binary. 
@@ -137,6 +135,7 @@ _(Installer / docker image coming some day...)_
 - [ ] Make install / paths more configurable with cli options
 - [ ] Extract stack list to make it extensible
 - [ ] Extract database configs to make them extensible
+- [ ] Extract templating engine config to make them extensible
 - [ ] More robust package manager support TBD
 - [ ] Build a TUI  
 - [ ] Add other useful commandline flag support TBD
