@@ -64,8 +64,9 @@ All 4 stacks offer DB client options. Currently supported:
 *Note - selecting a database does not install the database platform, only the client unless you select [Docker containers in the options](#containers)
 
 ### Linting
-- All JS/TS stacks come with ESLint installed and StyleLint if a frontend is enabled
+- All TypeScript stacks come with ESLint installed 
 - All Rust stacks include clippy
+- All Web Stacks (TSAPI & RSAPI) include StyleLint if a frontend is enabled
 
 ### Testing
 - All JS/TS stacks are currently built with bun which has a native test runner out of the box. Rust also has native test running support via `cargo test`.  
