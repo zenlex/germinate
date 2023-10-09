@@ -18,7 +18,7 @@ A project launchpad to accelerate going from idea to first line of code.
 - [Linting](#linting)
 - [Testing](#testing)
 - [Formatting](#formatting)
-- [Containers](#containers)
+- [Containers](#containers-web-stacks-only)
 - [Source Control](#source-control)
 - [Customization](#customization)
 - [Additional Template Files](#additional-template-files)
@@ -50,7 +50,7 @@ I am currently dogfooding the first iteration to triage improvements.
 - Rust CLI tool
 - TypeScript CLI tool
 
-### Notes on Stacks _(Mostly changeable via stack_template.toml files)_ {#stacknotes}
+### Notes on Stacks _(Mostly changeable via stack_template.toml files)_ 
 - RSAPI - Minimal Axum Web framework with tokio runtime and tower for http
 - TSAPI - Bun + Hono + Zod - Typesafe, minimal, fast, and built for the edges
 - RSCLI + TSCLI - Rust and TS CLI tool setups with useful tools for command line interaction
@@ -78,7 +78,8 @@ All 4 stacks offer DB client options. Currently supported:
 - ESLint is recommended as the formatter for the TS stacks in your IDE of choice
 - rustfmt is native to the Rust ecosystem and the recommended choice for the RS stacks. 
 
-### Containers (Web stacks only) {#containers}
+<a name=#containers></a>
+### Containers (Web stacks only) 
 - Selecting 'Yes' to the containers option for the web stacks will copy the `/docker` folder from `GERMINATE_PATH/templates/{stack}/` to the project folder after injecting config variables via the `handlebars` crate into the docker templates. 
 - Result
   - A `docker-compose.yml` with services for:
@@ -88,7 +89,7 @@ All 4 stacks offer DB client options. Currently supported:
     - `database` and `database_test` docker volumes for dev data persistence
   - Dockerfiles and entrypoint scripts as starting points for dev and prod builds
 
-### Source Control {#source-control}
+### Source Control 
 - A git repositiory is automatically initialized at the project root and an initial commit made post project setup. `.gitignore` files can also be customized in the `templates` folders. 
 
 ### Additional Template files
