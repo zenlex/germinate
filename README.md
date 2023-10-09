@@ -108,7 +108,7 @@ version = "1.0" (optional - defaults to 'latest' if not provided)
 then = [["commandA", "arg1", "arg2"], ["commandB", "arg1", "arg2"]] (optional - these will be run after the install command for the package)
 ```
 
-### Additional Template files
+### Additional Template Files
 You may add files to your `templates/[stack]/` folder to be included on new projects. 
 - Any folders/files in the `before_install` subfolder for a stack are copied to the new project folder prior to running the dependency install commands. 
 - Any folders/files in the `after_install` subfolder for a stack are copied to the new project folder after running the dependency install commands. 
@@ -125,9 +125,9 @@ _(Installer / docker image coming some day...)_
   - *Make sure to add your `GERMINATE_PATH` location to your system PATH if you want to be able to call it from any parent folder* 
 
 ### Manual Build
-- Run `cargo build` for a dev build or `cargo build --release` for a productio build if you're not planning to modify the app. 
+- Run `cargo build` for a dev build or `cargo build --release` for a production build if you're not planning to modify the app. 
 
-- place the built binary from `/target/(release|debug)/germinate` wherever you'd like on your system, and copy the `/templates` folder to the same loation as the binary. 
+- place the built binary from `/target/(release|debug)/germinate` wherever you'd like on your system, and copy the `/templates` folder to the same location as the binary. 
 
 
 *Everything comes with some amount of linting, formatting, and testing whether you like it or not ;)* 
