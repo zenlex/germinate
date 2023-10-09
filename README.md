@@ -70,7 +70,7 @@ All 4 stacks offer DB client options. Currently supported:
 
 ### Testing
 - All JS/TS stacks are currently built with bun which has a native test runner out of the box. Rust also has native test running support via `cargo test`.  
-- The optional SPAs for the web stacks both leverage Vite/Vue's create flow where you can select additional front end testing options (Vitest + Playwright recommended)
+- The optional SPAs for the web stacks both leverage Vite/Vue's create flow where you can select additional front end testing options.
 
 ### Formatting
 - ESLint is installed for the TypeScript stacks and can be selected as the formatter in your IDE of choice.
