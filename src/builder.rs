@@ -47,7 +47,7 @@ fn post_install_commands(config: &ScaffoldConfig) -> Result<()> {
                 match stack {
                     StackTemplate::TSAPI => {
                         let mut command = Command::new("bun");
-                        command.args(&["add", "handlebars"]);
+                        command.args(&["add", "handlebars", "--features", "dir_source"]);
                         command.output().expect("Failed to execute command");
                     }
                     StackTemplate::RSAPI => {
