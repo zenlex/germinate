@@ -4,7 +4,7 @@ GERMINATE_PATH=~/clitools/germinate
 # use debug for development, release for production
 BUILD=debug # options: debug, release
 
-if [$BUILD eq release] 
+if [ $BUILD = release ] 
 then 
 cargo build --release
 
