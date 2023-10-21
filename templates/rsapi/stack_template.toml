@@ -25,4 +25,4 @@ name = "axum_test"
 
 [[deps.cargo]]
 name = "time"
-features = ["macros"]
+features = ["macros", "serde"]
