@@ -19,3 +19,6 @@ features = ["cors"]
 
 [[deps.cargo]]
 name = "serde"
+
+[[deps.cargo]]
+name = "axum_test"
