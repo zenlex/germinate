@@ -11,7 +11,11 @@ name = "tokio"
 features = ["macros", "rt-multi-thread"] 
 
 [[deps.cargo]]
+name = "tower"
+
+[[deps.cargo]]
 name = "tower-http"
+features = ["cors"]
 
 [[deps.cargo]]
 name = "serde"
