@@ -11,4 +11,7 @@ name = "tokio"
 features = ["macros", "rt-multi-thread"] 
 
 [[deps.cargo]]
+name = "tower-http"
+
+[[deps.cargo]]
 name = "serde"
