@@ -5,6 +5,7 @@ description = "Rust Web App"
 # Web Framework
 [[deps.cargo]]
 name = "axum"
+features = ["macros"]
 
 [[deps.cargo]]
 name = "tokio" 
@@ -26,3 +27,9 @@ name = "axum_test"
 [[deps.cargo]]
 name = "time"
 features = ["macros", "serde"]
+
+[[deps.cargo]]
+name="strum"
+
+[[deps.cargo]]
+name="strum_macros"

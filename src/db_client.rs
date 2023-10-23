@@ -38,7 +38,7 @@ impl DbClient {
                 let mut command = Command::new("cargo");
                 command.args(&["add", "sqlx"]);
 
-                let mut features = String::from("runtime-tokio,tls-native-tls");
+                let mut features = String::from("runtime-tokio,tls-native-tls,time,migrate");
 
                 let additional_features = match db {
                     Database::Postgres => "postgres",
